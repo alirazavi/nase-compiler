@@ -1,0 +1,16 @@
+INTEGER a;
+$ INTEGER a;
+INTEGER b,c;
+INTEGER d;
+$ INTEGER b;
+
+READ a;
+$ a := 4;
+READ b;
+$ b := 9;
+READ c;
+$ c := 3;
+
+d := a+b/c;
+
+WRITE d;
