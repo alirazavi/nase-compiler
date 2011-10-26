@@ -6,6 +6,9 @@ package compiler;
 
 import java.io.File;
 
+import compiler.Parser;
+import compiler.Scanner;
+
 import files.FileManager;
 
 /**
