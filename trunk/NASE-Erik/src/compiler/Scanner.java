@@ -25,18 +25,42 @@ public class Scanner {
 	
 	private final boolean DEBUG_SCANNER = true;
 
-	private SymbolTable symtab;
-	
 	private String specialChars = " "+Infile.EOF;
 	private int symbolnr;
 	
 	private boolean exit;
 	
 	public Scanner() {
-		symtab = new SymbolTable();
 		exit = false;
 	}
 
+	public int getCurrentSymbol(){
+		return symbolnr;
+	}
+	
+	public void skipToDelimiter(){
+		String token;
+		int symbol = getCurrentSymbol();
+		
+		if(symbol == Symbols.NULL_SYMBOL.ordinal() ||
+			 symbol == Symbols.EOF_SYMBOL.ordinal()  ||
+			 symbol == Symbols.DELIMITER_SYMBOL.ordinal())
+			return;
+				
+		while((token = getNextToken()).length() > 0){
+			symbol = SymbolTable.getInstance().classifySymbol(token);
+			if(symbol == Symbols.NULL_SYMBOL.ordinal()){
+				scannerDebugOutTokenSymbol(token, symbol);
+				continue;
+			} else if(symbol == Symbols.EOF_SYMBOL.ordinal() || symbol == Symbols.DELIMITER_SYMBOL.ordinal()){
+				scannerDebugOutTokenSymbol(token, symbol);
+				break;
+			}
+			scannerDebugOutText("Skipping...");
+			scannerDebugOutTokenSymbol(token, symbol);
+		}
+	}
+	
 	public boolean getNextSymbol(){
 		if(exit)
 			return false;
@@ -45,9 +69,9 @@ public class Scanner {
 			scannerDebugOutTokenSymbol(symbol, Symbols.NULL_SYMBOL.ordinal());
 			return false;
 		} else {
-			symbolnr = symtab.classifySymbol(symbol);
+			symbolnr = SymbolTable.getInstance().classifySymbol(symbol);
 			if (symbolnr <= Symbols.NULL_SYMBOL.ordinal())
-				symbolnr = symtab.insertUserSymbol(symbol);
+				symbolnr = SymbolTable.getInstance().insertUserSymbol(symbol);
 			scannerDebugOutTokenSymbol(symbol, symbolnr);
 			return true;
 		}

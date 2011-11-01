@@ -133,6 +133,11 @@ public class Symbol {
 	public void setSymbols(int symbols) {
 		this.symbols = symbols;
 	}
+
+	@Override
+	public String toString() {	
+		return String.format("number: %5d\tfixed: %-5b\tBreaking Sequence: %-5b\ttype: %-20s\tNodeLink: %-5d\t Value: %-10s", symbols, fixed, breakingCharSeq, type.name(), nodeLink, stringRepresentation);
+	}
 	
 	
 	

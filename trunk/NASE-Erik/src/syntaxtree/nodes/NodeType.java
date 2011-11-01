@@ -1,4 +1,4 @@
-package syntaxtree;
+package syntaxtree.nodes;
 
 public enum NodeType {
 
