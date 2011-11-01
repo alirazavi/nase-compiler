@@ -1,4 +1,3 @@
-
 package symboltable;
 
 public enum SymbolType {

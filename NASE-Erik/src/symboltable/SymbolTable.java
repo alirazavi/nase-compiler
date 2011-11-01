@@ -3,7 +3,8 @@
  */
 package symboltable;
 
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import files.Infile;
 
@@ -13,10 +14,18 @@ import files.Infile;
  */
 public class SymbolTable {
 	
-	private HashMap<String,Symbol> symTable;
+	private static SymbolTable instance = null;
 	
-	public SymbolTable(){
-		symTable = new HashMap<String,Symbol>();
+	public static SymbolTable getInstance(){
+		if(instance == null)
+			instance = new SymbolTable();
+		return instance;
+	}
+	
+  private LinkedHashMap<String,Symbol> symTable;
+	
+	private SymbolTable(){
+		symTable = new LinkedHashMap<String,Symbol>();
 		symTable.put("", new Symbol("", false, 0, true, SymbolType.RESERVED_WORD, 0, Symbols.NULL_SYMBOL.ordinal()));
 		symTable.put(""+Infile.EOF, new Symbol(""+Infile.EOF, true, 0, true, SymbolType.RESERVED_WORD, 0, Symbols.EOF_SYMBOL.ordinal()));
 		symTable.put(";", new Symbol(";", true, 0, true, SymbolType.RESERVED_WORD, 0, Symbols.DELIMITER_SYMBOL.ordinal()));
@@ -74,5 +83,15 @@ public class SymbolTable {
 				return false;
 		}
 		return true;
+	}
+	
+	public String toString(){
+		StringBuffer buffer = new StringBuffer();
+		buffer.append('\n');
+		Iterator<Symbol> it = symTable.values().iterator();
+		while(it.hasNext()){
+			buffer.append(String.format("%s\n", it.next()));
+		}
+		return buffer.toString();
 	}
 }
