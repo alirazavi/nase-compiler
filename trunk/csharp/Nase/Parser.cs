@@ -47,7 +47,7 @@ namespace Nase
             FilePosition position = GetInputFilePosition();
             if (null != (statementSequenceNode = IsStatementSequence()))
             {
-                if (IsEofSymbol())
+                if (this._scanner.PeekSymbol() == Symbol.EOF_SYMBOL)
                 {
                     return new SyntaxTreeProgramNode(position, statementSequenceNode);
                 }
@@ -98,13 +98,12 @@ namespace Nase
                 this._scanner.NextSymbol();
                 return statementNode;
             }
-            else if (IsEofSymbol())
+            else if (this._scanner.PeekSymbol() == Symbol.EOF_SYMBOL)
             {
                 return null;
             }
 
             return CreateErrorNode("Statement expected");
-            throw new Exception("The method or operation is not implemented.");
         }
 
         /*
@@ -544,12 +543,7 @@ namespace Nase
             return typeNode;
         }
 
-        bool IsEofSymbol()
-        {
-            return Symbol.EOF_SYMBOL == this._scanner.PeekSymbol();
-        }
-
-        bool IsRelationOpSymbol(Symbol symbol)
+        static bool IsRelationOpSymbol(Symbol symbol)
         {
             return
                 symbol == Symbol.LT_SYMBOL ||

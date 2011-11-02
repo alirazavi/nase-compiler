@@ -56,7 +56,7 @@ namespace Nase
 
         public void SkipToDelimiter()
         {
-            Symbol symbol = NextSymbol();
+            Symbol symbol = this._peekSymbol;
             if (symbol == Symbol.NULL_SYMBOL ||
                 symbol == Symbol.EOF_SYMBOL ||
                 symbol == Symbol.DELIMITER_SYMBOL)
@@ -80,6 +80,7 @@ namespace Nase
                     DebugOutTokenSymbol(tokenString, symbol);
                 }
             }
+            this._peekSymbol = symbol;
         }
 
         Symbol AdvanceSymbol()
@@ -100,6 +101,7 @@ namespace Nase
 
         void DebugOutText(string message)
         {
+            Logger.Debug(message);
             this._fileManager.Listing.AppendLine(message);
         }
 
