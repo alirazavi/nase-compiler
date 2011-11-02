@@ -25,10 +25,7 @@ public abstract class Node {
 
 	public String toString(){
 		StringBuffer buffer = new StringBuffer();
-		buffer.append('\n');
-		buffer.append(representation);
-		buffer.append('\n');
-		buffer.append(String.format("\nNode start\n\t%s\n\tRow: %5d\n\tColumn: %5d\n\tEntries: %5d\n\tLinks: %5d", representation, line, column, userEntries.size()+children.size(), children.size()));
+		buffer.append(String.format("\nNode start\n\t%s\n\tRow:      %d\n\tColumn:   %d\n\tEntries:   %d\n\tLinks:     %d", representation, line, column, userEntries.size()+children.size(), children.size()));
 		
 		return buffer.toString();
 	}

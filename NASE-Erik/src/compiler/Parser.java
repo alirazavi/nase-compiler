@@ -1,11 +1,14 @@
 package compiler;
 
+import symboltable.SymbolTable;
 import symboltable.Symbols;
+import syntaxtree.nodes.DeclarationNode;
 import syntaxtree.nodes.ErrorNode;
 import syntaxtree.nodes.Node;
 import syntaxtree.nodes.NullNode;
 import syntaxtree.nodes.ProgrammNode;
-import syntaxtree.nodes.StatementSequenceNode;
+import syntaxtree.nodes.SequenceNode;
+import syntaxtree.nodes.TypeNameNode;
 import files.FileManager;
 import files.Infile;
 
@@ -28,8 +31,62 @@ public class Parser {
 		FileManager.getInstance().getListing().write(String.format("\nSYNTAX ERROR near line %d, column %d: %s", line, column, error));	
 	}
 	
-	private Node isDeclaration(){
+	private Node isTypeName(){
+		Node type = NULLNODE;
+		int column = FileManager.getInstance().getInfile().getColumn();
+		int row = FileManager.getInstance().getInfile().getLine();		
 		
+		if(scanner.getCurrentSymbol() == Symbols.INT_TYPE_SYMBOL.ordinal()){
+			type = new TypeNameNode(column, row, Symbols.INT_TYPE_SYMBOL);
+			scanner.getNextSymbol();
+		}
+		
+		return type;
+	}
+	
+	
+	private Node isDeclaration(){
+		Node error;
+		Node type;
+		Node decl;
+		Node declseq = NULLNODE;
+		Node firstdeclseq = NULLNODE;
+		
+		boolean commaOccured = false;
+		int column = FileManager.getInstance().getInfile().getColumn();
+		int row = FileManager.getInstance().getInfile().getLine();		
+		
+		if(!NULLNODE.equals(type = isTypeName())){
+			do{
+				int currentSymbol = scanner.getCurrentSymbol();
+				
+				if(SymbolTable.getInstance().isAnyIdentifierSymbol(currentSymbol)){
+					decl = new DeclarationNode(column, row, currentSymbol);
+					decl.addChild(type);
+					if(!scanner.getNextSymbol()){
+						reportGeneralSyntaxError(row, column, "Unexpected EOF");
+						column = FileManager.getInstance().getInfile().getColumn();
+						row = FileManager.getInstance().getInfile().getLine();
+						return new ErrorNode(row, column);
+					} 
+				} else {
+					column = FileManager.getInstance().getInfile().getColumn();
+					row = FileManager.getInstance().getInfile().getLine();
+					reportGeneralSyntaxError(row, column, "Identifier expected after type name");
+					scanner.skipToDelimiter();
+					return new ErrorNode(row, column);
+				}
+				
+				column = FileManager.getInstance().getInfile().getColumn();
+				row = FileManager.getInstance().getInfile().getLine();
+				
+				if(scanner.getCurrentSymbol() == Symbols.COMMA_SYMBOL.ordinal()){
+					
+				}
+				
+			}while(scanner.getCurrentSymbol() == Symbols.DELIMITER_SYMBOL.ordinal());
+			return firstdeclseq;
+		}
 		return NULLNODE;
 	}
 	
@@ -39,7 +96,7 @@ public class Parser {
 		int column;
 		
 		if(! NULLNODE.equals((statement = isDeclaration()))){
-			if(Symbols.DELIMITER_SYMBOL.ordinal() == scanner.getCurrentSymbol()){
+			if(Symbols.DELIMITER_SYMBOL.ordinal() == scanner.getCurrentSymbol()){				
 				scanner.getNextSymbol();
 				return statement;
 			} else {
@@ -66,7 +123,7 @@ public class Parser {
 		int row = FileManager.getInstance().getInfile().getLine();		
 		
 		if(!NULLNODE.equals((statementNode = isStatement()))){
-			statementSequenceNode = new StatementSequenceNode(NULLNODE, row, column);
+			statementSequenceNode = new SequenceNode(NULLNODE, row, column);
 			statementSequenceNode.addChild(statementNode);
 		}
 		firstStatementSequenceNode = statementSequenceNode;
@@ -74,7 +131,7 @@ public class Parser {
 		while(!NULLNODE.equals(statementNode = isStatement())){		
 			column = FileManager.getInstance().getInfile().getColumn();
 			row = FileManager.getInstance().getInfile().getLine();
-			statementSequenceNode = new StatementSequenceNode(statementSequenceNode, row, column);
+			statementSequenceNode = new SequenceNode(statementSequenceNode, row, column);
 			statementSequenceNode.addChild(statementNode);
 		}
 			
@@ -90,10 +147,10 @@ public class Parser {
 		
 		scanner.getNextSymbol();
 		
-		statementSequenceNode = isStatementSequence();
-		if(!statementSequenceNode.equals(NULLNODE)){
+		if(NULLNODE.equals(statementSequenceNode = isStatementSequence())){
 			if(isEOFSymbol()){
 				programmNode = new ProgrammNode(null, row, column);
+				programmNode.addChild(statementSequenceNode);
 				return programmNode;
 			} else {
 				reportGeneralSyntaxError(row, column, "EOF symbol at program end missed");
@@ -110,6 +167,7 @@ public class Parser {
 		
 		rootNode = isProgramm(); 
 		
+		FileManager.getInstance().getListing().write(SymbolTable.getInstance().toString());
 		FileManager.getInstance().getListing().write(rootNode.toString());
 
 	}
