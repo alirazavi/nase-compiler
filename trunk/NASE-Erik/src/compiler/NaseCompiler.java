@@ -6,9 +6,6 @@ package compiler;
 
 import java.io.File;
 
-import compiler.Parser;
-import compiler.Scanner;
-
 import files.FileManager;
 
 /**
@@ -85,6 +82,7 @@ public class NaseCompiler {
 					FileManager.getInstance().getListing().write("\nCompilation successfull!");
 			}
 		}		
+	
 		FileManager.getInstance().closeOutFiles();
 		FileManager.getInstance().mergeOutFiles();
 	}
