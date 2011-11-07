@@ -5,8 +5,8 @@ import java.util.ArrayList;
 public abstract class Node {
 	
 	protected Node parent;
-	protected ArrayList<Node> children;
-	protected ArrayList<String> userEntries;
+	protected ArrayList<Node> children = new ArrayList<Node>();
+	protected ArrayList<String> userEntries = new ArrayList<String>();
 	protected String representation;
 	protected int symbol;
 	

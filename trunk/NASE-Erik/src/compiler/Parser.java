@@ -81,10 +81,32 @@ public class Parser {
 				row = FileManager.getInstance().getInfile().getLine();
 				
 				if(scanner.getCurrentSymbol() == Symbols.COMMA_SYMBOL.ordinal()){
-					
+					declseq = new SequenceNode(NULLNODE, row, column);
+					declseq.addChild(decl);
+					if(!commaOccured){
+						commaOccured = true;
+						firstdeclseq = declseq;
+					}
+					if(!scanner.getNextSymbol()){
+						reportGeneralSyntaxError(row, column, "Unexpected EOF");
+						column = FileManager.getInstance().getInfile().getColumn();
+						row = FileManager.getInstance().getInfile().getLine();
+						return new ErrorNode(row, column);						
+					}
+				} else if(scanner.getCurrentSymbol() == Symbols.DELIMITER_SYMBOL.ordinal()){
+					declseq = new SequenceNode(NULLNODE, row, column);
+					declseq.addChild(decl);
+					if(!commaOccured)
+						firstdeclseq = declseq;
+				} else {
+					column = FileManager.getInstance().getInfile().getColumn();
+					row = FileManager.getInstance().getInfile().getLine();
+					reportGeneralSyntaxError(row, column, "',' or ';' expected after an identifier declaration");
+					scanner.skipToDelimiter();
+					return new ErrorNode(row, column);	
 				}
 				
-			}while(scanner.getCurrentSymbol() == Symbols.DELIMITER_SYMBOL.ordinal());
+			}while(scanner.getCurrentSymbol() != Symbols.DELIMITER_SYMBOL.ordinal());
 			return firstdeclseq;
 		}
 		return NULLNODE;
@@ -147,13 +169,13 @@ public class Parser {
 		
 		scanner.getNextSymbol();
 		
-		if(NULLNODE.equals(statementSequenceNode = isStatementSequence())){
+		if(! NULLNODE.equals(statementSequenceNode = isStatementSequence())){
 			if(isEOFSymbol()){
 				programmNode = new ProgrammNode(null, row, column);
 				programmNode.addChild(statementSequenceNode);
 				return programmNode;
 			} else {
-				reportGeneralSyntaxError(row, column, "EOF symbol at program end missed");
+				reportGeneralSyntaxError(FileManager.getInstance().getInfile().getLine(), FileManager.getInstance().getInfile().getColumn(), "EOF symbol at program end missed");
 			}
 			return NULLNODE;	
 		}
@@ -161,8 +183,6 @@ public class Parser {
 	}
 
 	public void parseProgramm() {
-		String buffer;
-
 		FileManager.getInstance().getListing().write(" ");
 		
 		rootNode = isProgramm(); 
