@@ -6,11 +6,8 @@ package compiler;
 
 import java.io.File;
 
-import symboltable.SymbolTable;
-
-import compiler.scanner.ScannerWrapper;
-import compiler.scanner.Scanner;
 import compiler.scanner.ScannerFactory;
+import compiler.scanner.ScannerWrapper;
 
 import files.FileManager;
 
