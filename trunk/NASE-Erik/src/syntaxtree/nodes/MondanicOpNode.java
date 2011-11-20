@@ -1,9 +1,8 @@
 package syntaxtree.nodes;
 
-
-public class SequenceNode extends Node {
+public class MondanicOpNode extends Node {
 	
-	public SequenceNode(Node parent, int line, int column){
+	public MondanicOpNode(int line, int column){
 		this.line = line;
 		this.column = column;
 		id = idCounter++;

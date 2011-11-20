@@ -1,12 +1,15 @@
 /**
  * 
  */
-package compiler;
+package compiler.scanner;
 
 import java.util.StringTokenizer;
 
 import symboltable.SymbolTable;
 import symboltable.Symbols;
+
+import compiler.NaseCompiler;
+
 import files.FileManager;
 import files.Infile;
 
@@ -14,7 +17,7 @@ import files.Infile;
  * @author student
  * 
  */
-public class Scanner {
+public class Scanner extends ScannerWrapper{
 
 	private final int CHAR_CLASS_ILLEGAL = 0;
 	private final int CHAR_CLASS_BLANK = 1;
@@ -23,15 +26,19 @@ public class Scanner {
 	private final int CHAR_CLASS_LOWER = 4;
 	private final int CHAR_CLASS_SPECIAL = 5;
 	
-	private final boolean DEBUG_SCANNER = true;
 
-	private String specialChars = " "+Infile.EOF;
+	private String specialChars = " "+FileManager.EOF;
 	private int symbolnr;
 	
 	private boolean exit;
 	
 	public Scanner() {
 		exit = false;
+		
+		FileManager.getInstance().getEchofile().echoWriteLine("Used scanner: Scanner.java\n");
+		
+		FileManager.getInstance().getEchofile().echoWriteLineNr(1);
+		FileManager.getInstance().getInfile().readNextChar();
 	}
 
 	public int getCurrentSymbol(){
@@ -42,19 +49,19 @@ public class Scanner {
 		String token;
 		int symbol = getCurrentSymbol();
 		
-		if(symbol == Symbols.NULL_SYMBOL.ordinal() ||
-			 symbol == Symbols.EOF_SYMBOL.ordinal()  ||
-			 symbol == Symbols.DELIMITER_SYMBOL.ordinal())
+		if(symbol == Symbols.NULL_SYMBOL  ||
+			 symbol == Symbols.EOF   ||
+			 symbol == Symbols.DELIMITER_SYMBOL )
 			return;
 				
 		while((token = getNextToken()).length() > 0){
 			symbol = SymbolTable.getInstance().classifySymbol(token);
-			if(symbol == Symbols.NULL_SYMBOL.ordinal()){
+			if(symbol == Symbols.NULL_SYMBOL ){
 				scannerDebugOutTokenSymbol(token, symbol);
 				continue;
-			} else if(symbol == Symbols.EOF_SYMBOL.ordinal() || symbol == Symbols.DELIMITER_SYMBOL.ordinal()){
+			} else if(symbol == Symbols.EOF || symbol == Symbols.DELIMITER_SYMBOL){
 				scannerDebugOutTokenSymbol(token, symbol);
-				break;
+				return;
 			}
 			scannerDebugOutText("Skipping...");
 			scannerDebugOutTokenSymbol(token, symbol);
@@ -62,31 +69,23 @@ public class Scanner {
 	}
 	
 	public boolean getNextSymbol(){
-		if(exit)
+		if(exit){
+			symbolnr = Symbols.EOF;
 			return false;
+		}
 		String symbol = getNextToken();
 		if(symbol.length() == 0){
-			scannerDebugOutTokenSymbol(symbol, Symbols.NULL_SYMBOL.ordinal());
+			scannerDebugOutTokenSymbol(symbol, Symbols.NULL_SYMBOL);
 			return false;
 		} else {
 			symbolnr = SymbolTable.getInstance().classifySymbol(symbol);
-			if (symbolnr <= Symbols.NULL_SYMBOL.ordinal())
+			if (symbolnr <= Symbols.NULL_SYMBOL)
 				symbolnr = SymbolTable.getInstance().insertUserSymbol(symbol);
 			scannerDebugOutTokenSymbol(symbol, symbolnr);
 			return true;
 		}
 	}
 	
-	@SuppressWarnings("unused")
-	private void scannerDebugOutText(String message){
-		if(DEBUG_SCANNER)
-			FileManager.getInstance().getListing().write(message);
-	}
-	
-	private void scannerDebugOutTokenSymbol(String token, int sym){
-		if(DEBUG_SCANNER)
-			FileManager.getInstance().getListing().write(String.format("Scanned symbol: %s has ID: %d", token, sym));
-	}
 	
 	private String getNextToken() {
 		int i = 0;
@@ -94,7 +93,7 @@ public class Scanner {
 		
 		while (true) {
 			switch (FileManager.getInstance().getInfile().getCurrentChar()) {
-				case Infile.EOF:
+				case FileManager.EOF:
 					if (i == 0)
 						currentToken = new StringBuffer(currentToken).insert(0, FileManager.getInstance().getInfile().getCurrentChar()).toString();
 						currentToken = (exit ? "" : currentToken);
@@ -166,4 +165,16 @@ public class Scanner {
 		else
 			return CHAR_CLASS_ILLEGAL;
 	}
+
+	@Override
+	public int getLine() {
+		return FileManager.getInstance().getInfile().getLine();
+	}
+
+	@Override
+	public int getColumn() {
+		return FileManager.getInstance().getInfile().getColumn();
+	}
+	
+	
 }

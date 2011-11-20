@@ -3,6 +3,8 @@
  */
 package symboltable;
 
+import syntaxtree.nodes.Node;
+
 /**
  * @author student
  *
@@ -14,7 +16,7 @@ public class Symbol {
 	private int yielding;
 	private boolean fixed;
 	private SymbolType type;
-	private int nodeLink;
+	private Node nodeLink;
 	private int symbols;
 
 	
@@ -25,7 +27,7 @@ public class Symbol {
 	 * @param fixed
 	 */
 	public Symbol(String stringRepresentation, boolean breakingCharSeq,
-			int yielding, boolean fixed, SymbolType type, int nodeLink, int symbols) {
+			int yielding, boolean fixed, SymbolType type, Node nodeLink, int symbols) {
 		super();
 		this.stringRepresentation = stringRepresentation;
 		this.breakingCharSeq = breakingCharSeq;
@@ -109,14 +111,14 @@ public class Symbol {
 	/**
 	 * @return the nodeLink
 	 */
-	public int getNodeLink() {
+	public Node getNodeLink() {
 		return nodeLink;
 	}
 
 	/**
 	 * @param nodeLink the nodeLink to set
 	 */
-	public void setNodeLink(int nodeLink) {
+	public void setNodeLink(Node nodeLink) {
 		this.nodeLink = nodeLink;
 	}
 
@@ -136,7 +138,8 @@ public class Symbol {
 
 	@Override
 	public String toString() {	
-		return String.format("number: %5d\tfixed: %-5b\tBreaking Sequence: %-5b\ttype: %-20s\tNodeLink: %-5d\t Value: %-10s", symbols, fixed, breakingCharSeq, type.name(), nodeLink, stringRepresentation);
+		String id = (nodeLink == null) ? "null" : ""+nodeLink.getId();
+		return String.format("number: %5d\tfixed: %-5b\tBreaking Sequence: %-5b\ttype: %-20s\tNodeLink: %s\t Value: %-10s", symbols, fixed, breakingCharSeq, type.name(), id, stringRepresentation);
 	}
 	
 	
