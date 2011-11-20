@@ -7,12 +7,40 @@ namespace Nase.Syntax
 {
     class SyntaxTreeDeclarationNode : SyntaxTreeNode
     {
-        Symbol _identifier;
+        static readonly Logger Logger = LogManager.CreateLogger();
 
-        public SyntaxTreeDeclarationNode(FilePosition position, Symbol identifier)
+        internal Symbol Identifier { get; private set; }
+        ulong _memoryAddress;
+
+        public SyntaxTreeDeclarationNode(FilePosition position, SyntaxTreeNode typeNode, Symbol identifier)
             : base(position)
         {
-            this._identifier = identifier;
+            this._children.Add(typeNode);
+            this.Identifier = identifier;
+        }
+
+        public void SetMemoryAddress(CodeGeneratorHelper storage)
+        {
+            if (this._children[0] != null)
+            {
+                SyntaxTreeTypeNode typeNode = this._children[0] as SyntaxTreeTypeNode;
+
+                switch (typeNode.TypeSymbol)
+                {
+                    case Symbol.INT_TYPE_SYMBOL:
+                        this._memoryAddress = storage.GetAndPushVariableAddress();
+                        break;
+                }
+            }
+            else
+            {
+                throw new Exception("Type node must not be null.");
+            }
+        }
+
+        public ulong GetMemoryAddress()
+        {
+            return this._memoryAddress;
         }
 
         public override void AsString(StringBuilder b, int level)
@@ -26,13 +54,28 @@ namespace Nase.Syntax
             b.Append(this._position.Column);
             b.Append(" ");
             b.Append(this.GetType().Name);
-            b.Append("( Symbol = "); b.Append(this._identifier); b.Append(" )");
+            b.Append("( Symbol = "); b.Append(this.Identifier); b.Append(" )");
             b.Append("\n");
 
             foreach (var node in this._children)
             {
                 node.AsString(b, level + 1);
             }
+        }
+
+        public override bool CheckForIntegrity()
+        {
+            if (this._children.Count != 1)
+            {
+                Logger.Error("Type node is missing.");
+                return false;
+            }
+            if (this._children[0] == null)
+            {
+                Logger.Error("Type node must not be null.");
+                return false;
+            }
+            return this._children[0].CheckForIntegrity();
         }
     }
 }

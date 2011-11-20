@@ -12,7 +12,7 @@ namespace Nase
         public uint Column;
     }
 
-    class InputFile : IDisposable
+    public class InputFile : Stream, IDisposable
     {
         public const char EOF_CHAR = '\x3';
         public const char BLANK_CHAR = ' ';
@@ -26,11 +26,11 @@ namespace Nase
         FileStream _fileStream;
         StreamReader _inputStream;
 
-        EchoFile _echo;
+        OutputFile _echo;
         uint _lineNumber;
         uint _columnNumber;
 
-        public FilePosition Position
+        public FilePosition InputFilePosition
         {
             get
             {
@@ -42,7 +42,7 @@ namespace Nase
             }
         }
 
-        public InputFile(string baseFilename, EchoFile echo)
+        public InputFile(string filename, OutputFile echo)
         {
             this._echo = echo;
             this._lineNumber = 1;
@@ -50,7 +50,7 @@ namespace Nase
 
             try
             {
-                this._fileStream = File.Open(baseFilename + FileManager.INPUT_FILE_EXTENSION, FileMode.Open);
+                this._fileStream = File.Open(filename, FileMode.Open);
                 this._inputStream = new StreamReader(this._fileStream);
             }
             catch (Exception ex)
@@ -58,7 +58,7 @@ namespace Nase
                 Logger.FatalException(ex, "Error while opening input file");
             }
 
-            echo.AppendLine("Compilation listing of <{0}>", baseFilename + FileManager.INPUT_FILE_EXTENSION);
+            echo.AppendLine("Compilation listing of <{0}>", filename);
             echo.AppendLine("zzzzz:          11111111112222222222333333333344444444445555555555666666666677777777778");
             echo.AppendLine("eeeee: 12345678901234567890123456789012345678901234567890123456789012345678901234567890");
             echo.AppendLineNumber(this._lineNumber);
@@ -123,18 +123,69 @@ namespace Nase
             return nextChar;
         }
 
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            return this._fileStream.Read(buffer, offset, count);
+        }
+
+        public override long Position
+        {
+            get { return this._fileStream.Position; }
+            set { this._fileStream.Position = value; }
+        }
+
+        public override long Length
+        {
+            get { return this._fileStream.Length; }
+        }
+
+        public override void Flush()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool CanRead
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override bool CanWrite
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override bool CanSeek
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         #region de-ctor
 
         // IDisposable pattern: http://msdn.microsoft.com/en-us/library/fs2xkftw%28VS.80%29.aspx
 
         private bool _disposed = false;
-        public void Dispose()
+        public new void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this); // Take object out the finalization queue to prevent finalization code for it from executing a second time.
         }
 
-        private void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (this._disposed) return; // if already disposed, just return
 

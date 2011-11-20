@@ -32,10 +32,13 @@ namespace Nase
 
             using (FileManager fileManager = new FileManager(args[0]))
             {
+                SymbolTable symbolTable = new SymbolTable();
+                CodeGeneratorHelper cdh = new CodeGeneratorHelper();
                 SyntaxTree syntaxTree;
-                if (RunPhase_1(fileManager, out syntaxTree) &&
-                    RunPhase_2() &&
-                    RunPhase_3())
+
+                if (RunPhase_1(fileManager, symbolTable, out syntaxTree) &&
+                    RunPhase_2(syntaxTree, symbolTable, cdh) &&
+                    RunPhase_3(fileManager, syntaxTree, symbolTable, cdh))
                 {
                     Logger.Info("Compilation successful.");
                 }
@@ -43,21 +46,32 @@ namespace Nase
             }
         }
 
-        static bool RunPhase_1(FileManager fileManager, out SyntaxTree syntaxTree)
+        static bool RunPhase_1(FileManager fileManager, SymbolTable symbolTable, out SyntaxTree syntaxTree)
         {
-            Scanner scanner = new Scanner(fileManager);
-            Parser parser = new Parser(fileManager, scanner);
+            IScanner scanner = new GeneratedScannerWrapper(fileManager, symbolTable);
+            Parser parser = new Parser(fileManager, symbolTable, scanner);
 
             return parser.ParseProgramm(out syntaxTree);
         }
 
-        static bool RunPhase_2()
+        static bool RunPhase_2(SyntaxTree syntaxTree, SymbolTable symbolTable, CodeGeneratorHelper storage)
         {
-            return true;
+            if (syntaxTree.CheckForSemanticErrors(symbolTable) &&
+                syntaxTree.AllocateMemoryForConstants(storage) &&
+                syntaxTree.AllocateMemoryForVariables(storage))
+            {
+                return true;
+            }
+            return false;
         }
 
-        static bool RunPhase_3()
+        static bool RunPhase_3(FileManager fileManager, SyntaxTree syntaxTree, SymbolTable symbolTable, CodeGeneratorHelper cdh)
         {
+            fileManager.InitializeOutputFile();
+            syntaxTree.GenerateCode(fileManager, symbolTable, cdh);
+            fileManager.FinalizeOutputFile();
+
+
             return true;
         }
 

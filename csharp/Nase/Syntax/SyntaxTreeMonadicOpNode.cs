@@ -7,6 +7,8 @@ namespace Nase.Syntax
 {
     class SyntaxTreeMonadicOpNode : SyntaxTreeNode
     {
+        static readonly Logger Logger = LogManager.CreateLogger();
+
         Symbol _opCodeSymbol;
 
         public SyntaxTreeMonadicOpNode(FilePosition position, Symbol opCodeSymbol, SyntaxTreeNode operand)
@@ -34,6 +36,30 @@ namespace Nase.Syntax
             {
                 node.AsString(b, level + 1);
             }
+        }
+
+        public override bool CheckForIntegrity()
+        {
+            if (this._children.Count != 1)
+            {
+                Logger.Debug("Operand node is missing.");
+                return false;
+            }
+            if (this._children[0] == null)
+            {
+                Logger.Debug("Operand node must not be null.");
+                return false;
+            }
+            return this._children[0].CheckForIntegrity();
+        }
+
+        public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper codeGeneratorHelper)
+        {
+            AppendNodeComment(fileManager);
+
+            this._children[0].GenerateCode(fileManager, symbolTable, codeGeneratorHelper);
+
+            fileManager.Output.Append(Macro.MonadicOperator(this._opCodeSymbol));
         }
     }
 }

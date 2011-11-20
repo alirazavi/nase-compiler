@@ -16,7 +16,7 @@ namespace Nase
     public enum Symbol
     {
         NULL_SYMBOL = 0,
-        EOF_SYMBOL,                  // 1
+        EOF,                         // 1
         DELIMITER_SYMBOL,            // 2
         BEGIN_SYMBOL,                // 3
         END_SYMBOL,                  // 4
@@ -46,7 +46,7 @@ namespace Nase
         WRITE_SYMBOL,                // 28
     }
 
-    class SymbolTable
+    public class SymbolTable
     {
         struct SymbolTableEntry
         {
@@ -211,7 +211,10 @@ namespace Nase
                 Logger.Fatal("Invalid symbol table index");
                 throw new IndexOutOfRangeException();
             }
-            this._symbolTable[(int)symbol].nodeLink = node;
+            if (this._symbolTable[(int)symbol].nodeLink == null)
+            {
+                this._symbolTable[(int)symbol].nodeLink = node;
+            }
         }
 
         public string DumpSymbolTable()
@@ -239,7 +242,14 @@ namespace Nase
                         break;
                 }
 
-                buffer.AppendFormat("NodeLink: {0,-5}", this._symbolTable[i].nodeLink);
+                buffer.Append("NodeLink:");
+                if (this._symbolTable[i].nodeLink != null)
+                {
+                    buffer.AppendLine();
+                    this._symbolTable[i].nodeLink.AsString(buffer, 3);
+                }
+                else
+                    buffer.Append("null");
                 buffer.AppendFormat(" -- {0}", this._symbolTable[i].sRepresentation);
                 buffer.AppendLine();
             }

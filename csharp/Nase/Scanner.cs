@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Nase
 {
-    class Scanner
+    class Scanner : IScanner
     {
         enum CharClass
         {
@@ -19,17 +19,16 @@ namespace Nase
 
         static readonly Logger Logger = LogManager.CreateLogger();
 
-        public SymbolTable SymbolTable { get; private set; }
-
         FileManager _fileManager;
+        SymbolTable _symbolTable;
         string _specialChars;
         Symbol _peekSymbol;
 
-        public Scanner(FileManager fileManager)
+        public Scanner(FileManager fileManager, SymbolTable symbolTable)
         {
             this._fileManager = fileManager;
-            this.SymbolTable = new SymbolTable();
-            this._specialChars = this.SymbolTable.GetSpecialCharList();
+            this._symbolTable = symbolTable;
+            this._specialChars = this._symbolTable.GetSpecialCharList();
             this._peekSymbol = AdvanceSymbol();
         }
 
@@ -48,7 +47,7 @@ namespace Nase
         public void ScannerTest()
         {
             Symbol curSymbol = NextSymbol();
-            while (curSymbol != Symbol.EOF_SYMBOL)
+            while (curSymbol != Symbol.EOF)
             {
                 curSymbol = NextSymbol();
             }
@@ -58,7 +57,7 @@ namespace Nase
         {
             Symbol symbol = this._peekSymbol;
             if (symbol == Symbol.NULL_SYMBOL ||
-                symbol == Symbol.EOF_SYMBOL ||
+                symbol == Symbol.EOF ||
                 symbol == Symbol.DELIMITER_SYMBOL)
             {
                 return;
@@ -68,8 +67,8 @@ namespace Nase
             while (!delimiterFound)
             {
                 string tokenString = GetNextToken();
-                symbol = this.SymbolTable.ClassifySymbol(tokenString);
-                if (symbol == Symbol.EOF_SYMBOL ||
+                symbol = this._symbolTable.ClassifySymbol(tokenString);
+                if (symbol == Symbol.EOF ||
                     symbol == Symbol.DELIMITER_SYMBOL)
                 {
                     delimiterFound = true;
@@ -89,10 +88,10 @@ namespace Nase
             string tokenString = GetNextToken();
             if (tokenString.Length != 0)
             {
-                symbol = this.SymbolTable.ClassifySymbol(tokenString);
+                symbol = this._symbolTable.ClassifySymbol(tokenString);
                 if (symbol == Symbol.NULL_SYMBOL)
                 {
-                    symbol = this.SymbolTable.AddUserSymbol(tokenString);
+                    symbol = this._symbolTable.AddUserSymbol(tokenString);
                 }
             }
             DebugOutTokenSymbol(tokenString, symbol);

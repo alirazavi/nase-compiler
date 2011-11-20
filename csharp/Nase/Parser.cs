@@ -11,11 +11,13 @@ namespace Nase
         static readonly Logger Logger = LogManager.CreateLogger();
 
         FileManager _fileManager;
-        Scanner _scanner;
+        SymbolTable _symbolTable;
+        IScanner _scanner;
 
-        public Parser(FileManager fileManager, Scanner scanner)
+        public Parser(FileManager fileManager, SymbolTable symbolTable, IScanner scanner)
         {
             this._fileManager = fileManager;
+            this._symbolTable = symbolTable;
             this._scanner = scanner;
         }
 
@@ -26,7 +28,7 @@ namespace Nase
             SyntaxTreeNode rootNode = IsProgramm();
             syntaxTree = new SyntaxTree(rootNode);
 
-            Logger.Debug(this._scanner.SymbolTable.DumpSymbolTable());
+            Logger.Debug(this._symbolTable.DumpSymbolTable());
             Logger.Debug(syntaxTree.DumpTreeTable());
 
             return rootNode != null;
@@ -34,7 +36,7 @@ namespace Nase
 
         FilePosition GetInputFilePosition()
         {
-            return this._fileManager.Input.Position;
+            return this._fileManager.Input.InputFilePosition;
         }
 
         /*
@@ -47,7 +49,7 @@ namespace Nase
             FilePosition position = GetInputFilePosition();
             if (null != (statementSequenceNode = IsStatementSequence()))
             {
-                if (this._scanner.PeekSymbol() == Symbol.EOF_SYMBOL)
+                if (this._scanner.PeekSymbol() == Symbol.EOF)
                 {
                     return new SyntaxTreeProgramNode(position, statementSequenceNode);
                 }
@@ -98,7 +100,7 @@ namespace Nase
                 this._scanner.NextSymbol();
                 return statementNode;
             }
-            else if (this._scanner.PeekSymbol() == Symbol.EOF_SYMBOL)
+            else if (this._scanner.PeekSymbol() == Symbol.EOF)
             {
                 return null;
             }
@@ -123,11 +125,12 @@ namespace Nase
                 do
                 {
                     Symbol currentSymbol = this._scanner.PeekSymbol();
-                    if (this._scanner.SymbolTable.IsIdentifierSymbol(currentSymbol))
+                    if (this._symbolTable.IsIdentifierSymbol(currentSymbol))
                     {
-                        declNode = new SyntaxTreeDeclarationNode(position, currentSymbol);
+                        declNode = new SyntaxTreeDeclarationNode(position, typeNode, currentSymbol);
+                        this._symbolTable.SetDeclarationNodeLinkToSymbol(currentSymbol, declNode);
                         this._scanner.NextSymbol();
-                        if (this._scanner.PeekSymbol() == Symbol.EOF_SYMBOL)
+                        if (this._scanner.PeekSymbol() == Symbol.EOF)
                         {
                             return CreateErrorNode("Unexpected EOF", false);
                         }
@@ -147,7 +150,7 @@ namespace Nase
                             firstDeclSequeceNode = declSequenceNode;
                         }
                         this._scanner.NextSymbol();
-                        if (this._scanner.PeekSymbol() == Symbol.EOF_SYMBOL)
+                        if (this._scanner.PeekSymbol() == Symbol.EOF)
                         {
                             return CreateErrorNode("Unexpected EOF", false);
                         }
@@ -209,7 +212,7 @@ namespace Nase
         {
             FilePosition position = GetInputFilePosition();
             Symbol currentSymbol = this._scanner.PeekSymbol();
-            if (this._scanner.SymbolTable.IsIdentifierSymbol(currentSymbol))
+            if (this._symbolTable.IsIdentifierSymbol(currentSymbol))
             {
                 this._scanner.NextSymbol();
                 return new SyntaxTreeIdentNode(position, currentSymbol);
@@ -374,7 +377,7 @@ namespace Nase
                     if (currentSymbol == Symbol.CLOSE_PARENTHESIS_SYMBOL)
                     {
                         this._scanner.NextSymbol();
-                        return new SyntaxTreeNodeParenthesisNode(position, intExprNode);
+                        return new SyntaxTreeParenthesisNode(position, intExprNode);
                     }
                     else
                     {
@@ -402,14 +405,14 @@ namespace Nase
             SyntaxTreeNode constNode = null;
             FilePosition position = GetInputFilePosition();
             Symbol currentSymbol = this._scanner.PeekSymbol();
-            if (this._scanner.SymbolTable.IsNumberSymbol(currentSymbol))
+            if (this._symbolTable.IsNumberSymbol(currentSymbol))
             {
                 this._scanner.NextSymbol();
-                constNode = this._scanner.SymbolTable.GetDeclarationNodeLinkToSymbol(currentSymbol);
+                constNode = this._symbolTable.GetDeclarationNodeLinkToSymbol(currentSymbol);
                 if (null == constNode)
                 {
                     constNode = new SyntaxTreeConstNode(position, currentSymbol);
-                    this._scanner.SymbolTable.SetDeclarationNodeLinkToSymbol(currentSymbol, constNode);
+                    this._symbolTable.SetDeclarationNodeLinkToSymbol(currentSymbol, constNode);
                 }
                 return constNode;
             }

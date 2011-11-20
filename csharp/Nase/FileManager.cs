@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Nase
 {
-    class FileManager : IDisposable
+    public class FileManager : IDisposable
     {
         public const string INPUT_FILE_EXTENSION = ".nase";
         public const string TOTAL_LIST_FILE_EXTENSION = ".lst";
@@ -16,15 +16,17 @@ namespace Nase
         public const string MMIX_FILE_EXTENSION = ".mms";
         public const string MMIX_OBJECT_FILE_EXTENSION = ".mmo";
         public const string MMIX_LISTING_FILE_EXTENSION = ".mml";
+        public const string MMIX_PROLOG_FILE = "_prolog.mms";
         public const string PROG_STUB_FILE = "_nase_progstub.mms";
 
         static readonly Logger Logger = LogManager.CreateLogger();
 
-        public ListingFile Listing { get; private set; }
         public InputFile Input { get; private set; }
+        public OutputFile Listing { get; private set; }
+        public OutputFile Output { get; private set; }
 
         string _baseFilename;
-        EchoFile _echo;
+        OutputFile _echo;
 
         public FileManager(string filename)
         {
@@ -33,12 +35,12 @@ namespace Nase
                 + Path.GetFileNameWithoutExtension(filename);
 
             CleanUpFiles();
-            Listing = new ListingFile(this._baseFilename);
-            this._echo = new EchoFile(this._baseFilename);
-            Input = new InputFile(this._baseFilename, this._echo);
+            this.Listing = new OutputFile(this._baseFilename + FileManager.LIST_FILE_EXTENSION);
+            this._echo = new OutputFile(this._baseFilename + FileManager.ECHO_FILE_EXTENSION);
+            this.Input = new InputFile(this._baseFilename + FileManager.INPUT_FILE_EXTENSION, this._echo);
         }
 
-        public void CleanUpFiles()
+        void CleanUpFiles()
         {
             try
             {
@@ -75,11 +77,38 @@ namespace Nase
                         writeStream.Write(content, 0, (int)readStream.Length);
                     }
                 }
+                File.Delete(this._baseFilename + FileManager.ECHO_FILE_EXTENSION);
+                File.Delete(this._baseFilename + FileManager.LIST_FILE_EXTENSION);
             }
             catch (Exception ex)
             {
                 Logger.FatalException(ex, "Error while creating final listing file");
             }
+        }
+
+        public void InitializeOutputFile()
+        {
+            bool prologFileExists = File.Exists(FileManager.MMIX_PROLOG_FILE);
+            if (prologFileExists)
+            {
+                File.Copy(FileManager.MMIX_PROLOG_FILE, this._baseFilename + FileManager.MMIX_FILE_EXTENSION);
+            }
+            this.Output = new OutputFile(this._baseFilename + FileManager.MMIX_FILE_EXTENSION, true);
+            if (!prologFileExists)
+            {
+                this.Output.AppendLine(Macro.DefaultProlog());
+            }
+        }
+
+        public void FinalizeOutputFile()
+        {
+            this.Output.Dispose();
+            this.Output = null;
+
+            string cmdLine = string.Format("-b 120 -l {0} {1}",
+                this._baseFilename + FileManager.MMIX_LISTING_FILE_EXTENSION,
+                this._baseFilename + FileManager.MMIX_FILE_EXTENSION);
+            System.Diagnostics.Process.Start("mmixal.exe", cmdLine);
         }
 
         #region de-ctor
@@ -102,6 +131,9 @@ namespace Nase
                 this.Input.Dispose();
                 this._echo.Dispose();
                 this.Listing.Dispose();
+
+                if(this.Output != null)
+                    this.Output.Dispose();
             }
 
             this.Listing = null;
@@ -112,5 +144,6 @@ namespace Nase
         ~FileManager() { Dispose(false); } // finalizer called by the runtime. we should only dispose unmanaged objects and should NOT reference managed ones.
 
         #endregion
+
     }
 }

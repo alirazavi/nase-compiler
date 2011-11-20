@@ -6,44 +6,55 @@ using System.IO;
 
 namespace Nase
 {
-    class EchoFile : IDisposable
+    public class OutputFile : IDisposable
     {
         static readonly Logger Logger = LogManager.CreateLogger();
 
         FileStream _fileStream;
-        StreamWriter _echoStream;
+        StreamWriter _writeStream;
 
-        public EchoFile(string baseFilename)
+        public OutputFile(string filename, bool append = false)
         {
             try
             {
-                this._fileStream = File.Open(baseFilename + FileManager.ECHO_FILE_EXTENSION, FileMode.Create);
-                this._echoStream = new StreamWriter(this._fileStream);
+                FileMode openMode = FileMode.Create;
+                if (append)
+                {
+                    openMode = FileMode.Append;
+                }
+
+                this._fileStream = File.Open(filename, openMode);
+                this._writeStream = new StreamWriter(this._fileStream);
             }
             catch (Exception ex)
             {
-                Logger.FatalException(ex, "Error while creating echo file");
+                Logger.FatalException(ex, "Error while creating file \"{0}\"", filename);
             }
         }
 
         public void AppendChar(char c)
         {
-            this._echoStream.Write(c);
+            this._writeStream.Write(c);
+        }
+
+        public void Append(string line)
+        {
+            this._writeStream.Write(line);
         }
 
         public void AppendLine(string line)
         {
-            this._echoStream.WriteLine(line);
+            this._writeStream.WriteLine(line);
         }
 
         public void AppendLine(string line, params object[] args)
         {
-            this._echoStream.WriteLine(line, args);
+            this._writeStream.WriteLine(line, args);
         }
 
         public void AppendLineNumber(uint lineNr)
         {
-            this._echoStream.Write("{0:00000}: ", lineNr);
+            this._writeStream.Write("{0:00000}: ", lineNr);
         }
 
         #region de-ctor
@@ -63,19 +74,19 @@ namespace Nase
 
             if (disposing) // only dispose managed resources if we're called from directly or in-directly from user code.
             {
-                this._echoStream.Close();
-                this._echoStream.Dispose();
+                this._writeStream.Close();
+                this._writeStream.Dispose();
                 this._fileStream.Close();
                 this._fileStream.Dispose();
             }
 
-            this._echoStream = null;
+            this._writeStream = null;
             this._fileStream = null;
 
             this._disposed = true;
         }
 
-        ~EchoFile() { Dispose(false); } // finalizer called by the runtime. we should only dispose unmanaged objects and should NOT reference managed ones.
+        ~OutputFile() { Dispose(false); } // finalizer called by the runtime. we should only dispose unmanaged objects and should NOT reference managed ones.
 
         #endregion
 
