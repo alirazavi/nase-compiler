@@ -10,11 +10,9 @@ public class Infile {
 	public static final char TAB = '\t';
 	public static final char NEWLINE = '\n';
 	public static final char RETURN = '\r';
-	public static final char EOF = '\u0003';
 	
 	private PushbackInputStream infile;
 	
-	private String filename;
 	private String infileName;
 	
 	private int column = 1;
@@ -31,12 +29,7 @@ public class Infile {
 		} catch (IOException e) {
 			System.err.println("Error opening files");
 			e.printStackTrace();
-		}
-		
-		this.filename = filename;
-		//FileManager.getInstance(filename).getEchofile().echoWriteLineNr(line);
-		//readNextChar();
-		
+		}		
 	}
 	
 	public void close(){
@@ -57,7 +50,7 @@ public class Infile {
 			column++;
 			
 			if(character == -1){
-				currentChar = EOF;
+				currentChar = FileManager.EOF;
 			} else {
 				currentChar = (char) character;
 				FileManager.getInstance().getEchofile().echoWriteChar(currentChar);
@@ -93,7 +86,7 @@ public class Infile {
 						}
 												
 						if(character == -1){
-							currentChar = Infile.EOF;
+							currentChar = FileManager.EOF;
 							return;
 						}
 						
@@ -123,7 +116,7 @@ public class Infile {
 	}
 
 	public void inFileUnreadChar(){
-		if(currentChar != EOF){
+		if(currentChar != FileManager.EOF){
 			try {
 				infile.unread(currentChar);
 				column--;

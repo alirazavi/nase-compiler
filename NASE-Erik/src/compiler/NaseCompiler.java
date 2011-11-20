@@ -6,6 +6,12 @@ package compiler;
 
 import java.io.File;
 
+import symboltable.SymbolTable;
+
+import compiler.scanner.ScannerWrapper;
+import compiler.scanner.Scanner;
+import compiler.scanner.ScannerFactory;
+
 import files.FileManager;
 
 /**
@@ -16,11 +22,11 @@ public class NaseCompiler {
 
 	final static String[] FILE_EXTENSIONS = { ".lst", ".lst1", ".lst2", ".mms",
 			".mml", ".mmo" };
-	final static String TOKEN_LIST_SEPERATOR = " ";
+	public final static String TOKEN_LIST_SEPERATOR = " ";
 	
 	//private static Syntaxtree syntree;
 	
-	private static Scanner scanner;
+	private static ScannerWrapper scanner;
 
 	private static void unlinkOldFiles(String filename) {
 		System.out.println("[INFO]\tDeleting old files");
@@ -54,12 +60,13 @@ public class NaseCompiler {
 	 */
 	public static void main(String[] args) throws Exception{		
 		if (args.length < 1){
-			System.err.println("[ERROR]\tUsage: java -jar NaseCompiler.jar <filename>");
+			System.err.println("[ERROR]\tUsage: java -jar NaseCompiler.jar <filename> [-<scannertype>]");
 			System.err.println("[ERROR]\tUse no fileextension. \".nase\" assumed!");
+			System.err.println("[ERROR)\tIf no scannertype is given own scanner is used. use -jflex for generated.");
 			return;
 		}
 		
-		if(args.length > 1){
+		if(args.length > 2){
 			System.err.println("[WARNING]\tonly first argument is read");
 		}
 		
@@ -73,16 +80,23 @@ public class NaseCompiler {
 		FileManager.getInstance();
 		FileManager.getInstance().init(args[0]);
 		
-		scanner = new Scanner();	
+		/* analyze options  -jflex for jflex generated scanner*/
+		for(String s : args){
+			if(s.equals("-jflex"))
+				scanner = ScannerFactory.getScanner("jflex", args[0]);
+		}	
 		
-		//syntree = new Syntaxtree();
+		if(scanner == null)
+			scanner = ScannerFactory.getScanner();
+		
+			//syntree = new Syntaxtree();
 		if(phase1(args[0])){
 			if(phase2()){
 				if(phase3(args[0]))
 					FileManager.getInstance().getListing().write("\nCompilation successfull!");
 			}
 		}		
-	
+		
 		FileManager.getInstance().closeOutFiles();
 		FileManager.getInstance().mergeOutFiles();
 	}

@@ -2,17 +2,31 @@ package syntaxtree.nodes;
 
 import java.util.ArrayList;
 
-public abstract class Node {
+import compiler.Parser;
+
+public abstract class Node{
 	
+	protected static int idCounter = 0;
+
 	protected Node parent;
 	protected ArrayList<Node> children = new ArrayList<Node>();
-	protected ArrayList<String> userEntries = new ArrayList<String>();
+
+	protected ArrayList<Object> userEntries = new ArrayList<Object>();
+	
 	protected String representation;
 	protected int symbol;
 	
 	protected int line;
 	protected int column;
+	protected int id  = 0;
+		
+	public Node(){
+		Parser.addToHistory(this);
+	}
 	
+	public void addUserEntry(Object o){
+		userEntries.add(o);
+	}
 	
 	public void addChild(Node child){
 		child.setParent(this);
@@ -25,10 +39,24 @@ public abstract class Node {
 
 	public String toString(){
 		StringBuffer buffer = new StringBuffer();
-		buffer.append(String.format("\nNode start\n\t%s\n\tRow:      %d\n\tColumn:   %d\n\tEntries:   %d\n\tLinks:     %d", representation, line, column, userEntries.size()+children.size(), children.size()));
+		buffer.append(String.format("Node start\n\t%s\n\tID:       %d\n\tRow:      %d\n\tColumn:   %d\n\tEntries:   %d\n\tLinks:     %d", this.getClass().getSimpleName(), id, line, column, userEntries.size()+children.size(), children.size()));
+		buffer.append("\n");
+		for(Object o : userEntries)
+			buffer.append("\t Userentry: "+o);
+	
+		for(Node n : children)
+			buffer.append("\n" + n);
+		
+		if(children.size() == 0)
+			buffer.append("\n");
 		
 		return buffer.toString();
 	}
+	
+	public int getId(){
+		return id;
+	}
+
 
 	@Override
 	public int hashCode() {
@@ -56,6 +84,21 @@ public abstract class Node {
 		return true;
 	}
 
-	
+	public String dumpNode(){
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(String.format("Node start\n\t%s\n\tID:       %d\n\tRow:      %d\n\tColumn:   %d\n\tEntries:   %d\n\tLinks:     %d", this.getClass().getSimpleName(), id, line, column, userEntries.size()+children.size(), children.size()));
+		buffer.append("\n");
+		
+		for(Object o : userEntries)
+			buffer.append("\tUserentry: "+o);
+		
+		for(Node n : children)
+			buffer.append("\tChild-ID: "+n.getId()+"\n");
+		
+		if(children.size() == 0)
+			buffer.append("\n");
+		
+		return buffer.toString();
+	}
 	
 }

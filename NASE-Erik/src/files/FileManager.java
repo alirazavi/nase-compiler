@@ -7,6 +7,8 @@ import java.io.IOException;
 
 public class FileManager {
 
+	public static final char EOF = '\u0003';
+	
 	private static FileManager instance = null;
 	
 	private Echofile echofile;
@@ -23,7 +25,6 @@ public class FileManager {
 		infile = new Infile(filename);
 		listing = new Listing(filename);	
 		this.filename = filename;
-		instance.getInfile().readNextChar();
 	}
 	
 	

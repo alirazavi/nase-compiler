@@ -3,8 +3,6 @@
  */
 package syntaxtree.nodes;
 
-import java.util.ArrayList;
-
 import symboltable.Symbols;
 
 /**
@@ -13,14 +11,12 @@ import symboltable.Symbols;
  */
 public class TypeNameNode extends Node {
 	
-	public TypeNameNode(int col, int line, Symbols sym){
-		this.representation = "TypeNode";
+	public TypeNameNode(int col, int line, int sym){
 		this.column = col;
 		this.line = line;
-		this.symbol = sym.ordinal();
-		this.children = new ArrayList<Node>();
-		this.userEntries = new ArrayList<String>();
-		userEntries.add(sym.name());
+		this.symbol = sym;
+		id = idCounter++;
+		userEntries.add(Symbols.getSymbolName(sym));
 	}
 
 }

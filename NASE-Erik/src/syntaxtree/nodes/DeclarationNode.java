@@ -1,6 +1,5 @@
 package syntaxtree.nodes;
 
-import java.util.ArrayList;
 
 public class DeclarationNode extends Node {
 
@@ -8,9 +7,7 @@ public class DeclarationNode extends Node {
 		this.column = col;
 		this.line = line;
 		this.symbol = symbol;
-		this.children = new ArrayList<Node>();
-		this.userEntries = new ArrayList<String>();
-		this.representation = "declarationNode";
+		id = idCounter++;
 	}
 	
 }

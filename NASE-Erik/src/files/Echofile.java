@@ -16,7 +16,6 @@ public class Echofile {
 		}
 		
 		echoWriteLine(String.format("Compilation listing of <%s>\n", filename));
-		echoWriteLineNr(1);
 	}
 	
 	
@@ -30,6 +29,15 @@ public class Echofile {
 	}
 	
 	public void echoWriteChar(char ch){
+		try {
+			echofile.write(ch);
+		} catch (IOException e) {
+			System.err.println("File not available!");
+			e.printStackTrace();
+		}
+	}
+	
+	public void echoWriteString(String ch){
 		try {
 			echofile.write(ch);
 		} catch (IOException e) {
