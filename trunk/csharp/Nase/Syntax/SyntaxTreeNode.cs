@@ -5,15 +5,26 @@ using System.Text;
 
 namespace Nase.Syntax
 {
-    abstract class SyntaxTreeNode
+    public abstract class SyntaxTreeNode
     {
         protected FilePosition _position;
         protected List<SyntaxTreeNode> _children;
+
+        public abstract bool CheckForIntegrity();
 
         public SyntaxTreeNode(FilePosition position)
         {
             this._children = new List<SyntaxTreeNode>();
             this._position = position;
+        }
+
+        public virtual void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper labelHelper)
+        {
+            foreach (var node in this._children)
+            {
+                if (node != null)
+                    node.GenerateCode(fileManager, symbolTable, labelHelper);
+            }
         }
 
         public virtual void AsString(StringBuilder b, int level)
@@ -31,8 +42,40 @@ namespace Nase.Syntax
 
             foreach (var node in this._children)
             {
-                node.AsString(b, level + 1);
+                if(node != null)
+                    node.AsString(b,level + 1);
             }
+        }
+
+        public string ContextErrorString(string message, params object[] args)
+        {
+            string fullMessage = string.Format(message, args);
+            return string.Format("CONTEXT ERROR near {0}: {1}", PositionAsString(), fullMessage);
+        }
+
+        string PositionAsString()
+        {
+            return String.Format("line {0}, column {1}", this._position.Line, this._position.Column);
+        }
+
+        internal bool RunDelegateForType(System.Type type, SyntaxTree.TreeNodeDelegate delegateToRun)
+        {
+            bool result = true;
+            if (type.IsInstanceOfType(this))
+            {
+                result = delegateToRun(this);
+            }
+            foreach (var node in this._children)
+            {
+                if (node != null)
+                    result &= node.RunDelegateForType(type, delegateToRun);
+            }
+            return result;
+        }
+
+        protected void AppendNodeComment(FileManager fileManager)
+        {
+            fileManager.Output.AppendLine("% POSITION {0}/{1}: begin coding of {2}", this._position.Line, this._position.Column, this.GetType().Name);
         }
     }
 }

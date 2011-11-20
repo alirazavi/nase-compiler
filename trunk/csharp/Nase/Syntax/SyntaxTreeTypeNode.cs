@@ -7,12 +7,12 @@ namespace Nase.Syntax
 {
     class SyntaxTreeTypeNode : SyntaxTreeNode
     {
-        Symbol _symbol;
+        internal Symbol TypeSymbol { get; private set; }
 
-        public SyntaxTreeTypeNode(FilePosition position, Symbol symbol)
+        public SyntaxTreeTypeNode(FilePosition position, Symbol typeSymbol)
             : base(position)
         {
-            this._symbol = symbol;
+            this.TypeSymbol = typeSymbol;
         }
 
         public override void AsString(StringBuilder b, int level)
@@ -26,13 +26,21 @@ namespace Nase.Syntax
             b.Append(this._position.Column);
             b.Append(" ");
             b.Append(this.GetType().Name);
-            b.Append("( Symbol = "); b.Append(this._symbol); b.Append(" )");
+
+            b.Append("( Symbol = ");
+            b.Append(this.TypeSymbol);
+            b.Append(")");
             b.Append("\n");
 
             foreach (var node in this._children)
             {
                 node.AsString(b, level + 1);
             }
+        }
+
+        public override bool CheckForIntegrity()
+        {
+            return true;
         }
     }
 }

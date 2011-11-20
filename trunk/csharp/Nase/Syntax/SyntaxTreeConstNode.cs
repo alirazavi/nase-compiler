@@ -7,13 +7,23 @@ namespace Nase.Syntax
 {
     class SyntaxTreeConstNode : SyntaxTreeNode
     {
-        Symbol _symbol;
+        internal Symbol ConstSymbol { get; private set; }
+        bool _addressReserved;
+        ulong _memoryAddress;
 
         public SyntaxTreeConstNode(FilePosition position, Symbol symbol)
             : base(position)
         {
-            this._symbol = symbol;
-            // TODO
+            this.ConstSymbol = symbol;
+        }
+
+        public void SetMemoryAddress(CodeGeneratorHelper storage)
+        {
+            if (!this._addressReserved)
+            {
+                this._memoryAddress = storage.GetAndPushConstantAddress();
+                this._addressReserved = true;
+            }
         }
 
         public override void AsString(StringBuilder b, int level)
@@ -27,13 +37,25 @@ namespace Nase.Syntax
             b.Append(this._position.Column);
             b.Append(" ");
             b.Append(this.GetType().Name);
-            b.Append("( Symbol = "); b.Append(this._symbol); b.Append(" )");
+            b.Append("( Symbol = "); b.Append(this.ConstSymbol); b.Append(" )");
             b.Append("\n");
 
             foreach (var node in this._children)
             {
                 node.AsString(b, level + 1);
             }
+        }
+
+        public override bool CheckForIntegrity()
+        {
+            return true;
+        }
+
+        public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper labelHelper)
+        {
+            AppendNodeComment(fileManager);
+
+            fileManager.Output.Append(Macro.LoadAccuImmed(this._memoryAddress));
         }
     }
 }
