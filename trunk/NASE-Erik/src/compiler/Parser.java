@@ -206,7 +206,6 @@ public class Parser {
 	private Node isInlineIf(){
 		int line = scanner.getLine();
 		int column = scanner.getColumn();
-		int symbol;
 		Node boolExpr;
 		Node thenExpr;
 		Node elseExpr;
