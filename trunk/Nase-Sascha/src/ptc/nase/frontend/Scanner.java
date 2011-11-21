@@ -10,7 +10,7 @@ import ptc.nase.Nase;
 import ptc.nase.SymbolTable;
 
 @SuppressWarnings("unused")
-public class Scanner
+public class Scanner implements IScanner
 {
 	
 	private final char CHAR_CLASS_ILLEGAL = 0;

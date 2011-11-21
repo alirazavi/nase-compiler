@@ -31,7 +31,7 @@ public class SymbolTable
 	public static final int ST_MODULO_SYMBOL = 12;
 	public static final int ST_OR_SYMBOL = 13;
 	public static final int ST_AND_SYMBOL = 14;
-	public static final int ST_OPEN_PARAENTHESIS_SYMBOL = 15;
+	public static final int ST_OPEN_PARENTHESIS_SYMBOL = 15;
 	public static final int ST_CLOSE_PARENTHESIS_SYMBOL = 16;
 	public static final int ST_INLINE_IF_SYMBOL = 17;
 	public static final int ST_INLINE_FI_SYMBOL = 18;
@@ -54,9 +54,12 @@ public class SymbolTable
 	
 	private SymbolTableEntry symbolTable[];
 	
+	private SyntaxtreeNode nullNode;
+	
 	public SymbolTable()
 	{
 		symbolTable = new SymbolTableEntry[ST_SYMBOLTABLE_SIZE];
+		nullNode = new SyntaxtreeNode();
 		
 		for (int i = 0; i <= ST_FIXED_SYMBOLS; i++)
 		{
@@ -64,7 +67,7 @@ public class SymbolTable
 			symbolTable[i].isFixEntry = true;
 			symbolTable[i].isBreackingCharSeq = false;
 			symbolTable[i].type = SymbolType.reservedWordSymbol;
-			symbolTable[i].nodeLink = null;
+			symbolTable[i].nodeLink = nullNode;
 			symbolTable[i].sRepresentation = "";
 		}
 		
@@ -92,8 +95,8 @@ public class SymbolTable
 		setBreackingCharSeq( ST_MODULO_SYMBOL );
 		symbolTable[ST_OR_SYMBOL].sRepresentation = "OR";
 		symbolTable[ST_AND_SYMBOL].sRepresentation = "AND";
-		symbolTable[ST_OPEN_PARAENTHESIS_SYMBOL].sRepresentation = "(";
-		setBreackingCharSeq( ST_OPEN_PARAENTHESIS_SYMBOL );
+		symbolTable[ST_OPEN_PARENTHESIS_SYMBOL].sRepresentation = "(";
+		setBreackingCharSeq( ST_OPEN_PARENTHESIS_SYMBOL );
 		symbolTable[ST_CLOSE_PARENTHESIS_SYMBOL].sRepresentation = ")";
 		setBreackingCharSeq( ST_CLOSE_PARENTHESIS_SYMBOL );
 		symbolTable[ST_INLINE_IF_SYMBOL].sRepresentation = "IIF";
@@ -193,7 +196,7 @@ public class SymbolTable
 		
 		symbolTable[newSymbolTableEntry].isFixEntry = false;
 		symbolTable[newSymbolTableEntry].isBreackingCharSeq = false;
-		symbolTable[newSymbolTableEntry].nodeLink = null;	
+		symbolTable[newSymbolTableEntry].nodeLink = nullNode;	
 		symbolTable[newSymbolTableEntry].yielding = Integer.MAX_VALUE;
 		
 		if (isDigitSequence(currentToken))
@@ -234,6 +237,18 @@ public class SymbolTable
 		}
 	}
 	
+	public SyntaxtreeNode getSymbolNodeLink(int symbol)
+	{
+		if (symbol <= numberOfSymbolsInTable)
+		{
+			return symbolTable[symbol].nodeLink;
+		}
+		else
+		{
+			return nullNode;
+		}
+	}
+	
 	/***
 	* Versucht das Token pcCurrentToken einem Symbol zuzuordnen. Liefert das Symbol; 
 	* bei Nichtfinden ST_NULL_SYMBOL
@@ -258,6 +273,16 @@ public class SymbolTable
 		if (symbol <= numberOfSymbolsInTable )
 		{
 			return (symbolTable[symbol].type == SymbolType.identifierSymbol);
+		}
+		
+		return false;
+	}
+	
+	public boolean isAnyNumericSymbol(int symbol)
+	{
+		if (symbol <= numberOfSymbolsInTable )
+		{
+			return (symbolTable[symbol].type == SymbolType.numberSymbol);
 		}
 		
 		return false;
