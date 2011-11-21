@@ -14,7 +14,7 @@ public class SyntaxtreeView extends JFrame
 	private mxGraph graph;
 	private Object parent;
 	
-	private final int height = 40;
+	private final int height = 50;
 	private final int width = 120;
 	private final int padding = 40;
 	private final int paddingX = 150;
@@ -31,10 +31,10 @@ public class SyntaxtreeView extends JFrame
 		graph = new mxGraph();
 		parent = graph.getDefaultParent();
 		
-		graph.setCellsLocked(true);
+		//graph.setCellsLocked(true);
 		
 		graph.getModel().beginUpdate();
-		drawNode(syntaxtree.getRoot(), parent, 600, 20);
+		drawNode(syntaxtree.getRoot(), parent, 300, 20, 1);
 		graph.getModel().endUpdate();
 		
 		mxGraphComponent graphComponent = new mxGraphComponent(graph);
@@ -43,21 +43,21 @@ public class SyntaxtreeView extends JFrame
 		getContentPane().add(graphComponent);
 	}
 	
-	private Object drawNode(SyntaxtreeNode node, Object par, int x, int y)
+	private Object drawNode(SyntaxtreeNode node, Object par, int x, int y, int depth)
 	{
 		Object current = graph.insertVertex(par, null, node.toString(), x, y, width, height);
 		int childs = node.getNumberOfChilds();
 		
 		int childY = y + height + padding;
-		int childStartX = ((childs-1) * width) + ((childs-1)*paddingX);
+		int childStartX = ((childs-1) * width) + ((childs-1)*(int)(paddingX));
 		
 		childStartX = x - childStartX / 2;
 		
 		for (int i = 0; i < childs; i++)
 		{
-			Object child = drawNode(node.getChild(i), par, childStartX, childY);
+			Object child = drawNode(node.getChild(i), par, childStartX, childY, depth+1);
 			graph.insertEdge(par, null, "", current, child);
-			childStartX += width + paddingX;
+			childStartX += width + (int)(paddingX);
 		}
 		
 		return current;

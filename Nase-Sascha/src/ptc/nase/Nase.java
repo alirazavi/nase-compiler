@@ -4,7 +4,9 @@ import java.io.*;
 import java.util.ArrayList;
 
 import ptc.nase.exceptions.GeneralSyntaxError;
+import ptc.nase.frontend.IScanner;
 import ptc.nase.frontend.Infile;
+import ptc.nase.frontend.JFlexNaseScanner;
 import ptc.nase.frontend.Parser;
 import ptc.nase.frontend.Scanner;
 import ptc.nase.syntaxtree.nodes.NODE_TYPE;
@@ -34,9 +36,11 @@ public class Nase
 	{
 		try 
 		{
-			Scanner scanner;
-			scanner = new Scanner("parsetest");
+			IScanner scanner;
+			//scanner = new Scanner("parsetest");
 
+			scanner = new JFlexNaseScanner("parsetest");
+			
 			Parser parser = new Parser(scanner);			
 			
 			parser.parseProgram();

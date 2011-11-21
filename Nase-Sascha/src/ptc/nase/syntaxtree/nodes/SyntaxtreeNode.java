@@ -13,6 +13,9 @@ public class SyntaxtreeNode
 	private SyntaxtreeNode parent;
 	private int symbol;
 	
+	protected int id;
+	private static int idCount = 1;
+	
 	protected long line;
 	protected long column;
 	
@@ -30,6 +33,7 @@ public class SyntaxtreeNode
 		
 		childs = null;
 		userEntries = null;
+		id = 0;	// each NULL node has id 0
 	}
 	
 	protected SyntaxtreeNode(NODE_TYPE sType, long sLine, long sColumn)
@@ -41,7 +45,7 @@ public class SyntaxtreeNode
 		childs = null;
 		userEntries = null;
 		
-		System.out.println("SyntaxtreeNode()" + type);
+		id = idCount++;
 	}
 	
 	public NODE_TYPE getType()
@@ -111,13 +115,13 @@ public class SyntaxtreeNode
 	
 	public String toString()
 	{
-		String ret = type.toString() + " (" + line + "," + column + ")";
+		String ret = type.toString() + " " + id + " (" + line + "," + column + ")";
 		
 		if (userEntries != null)
 		{
 			for (int i = 0; i < userEntries.size(); i++)
 			{
-				ret += "\nEntry" + i + "=" + userEntries.get(i); 
+				ret += "\nEntry " + i + " = " + userEntries.get(i); 
 			}
 		}
 		

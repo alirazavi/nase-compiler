@@ -16,14 +16,14 @@ public class Parser
 	
 	private final boolean DEBUG_PARSER = true; 
 	
-	private Scanner scanner;
+	private IScanner scanner;
 	private SyntaxtreeNode nullNode;
 	private SymbolTable symbolTable;
 	private Syntaxtree syntaxtree;
 	
 	public SyntaxtreeView treeView;
 	
-	public Parser(Scanner sScanner)
+	public Parser(IScanner sScanner)
 	{
 		scanner = sScanner;
 		nullNode = new SyntaxtreeNode();
@@ -249,12 +249,108 @@ public class Parser
 		return true;
 	}
 	
-	private SyntaxtreeNode isDeclaration()
+	private SyntaxtreeNode isDeclaration() throws IOException
 	{
+		long line = scanner.getCurrentLine();
+		long column = scanner.getCurrentColumn();	
+		int currentSymbol;
 		
-		// TODO: nach new Declaration(...) --> ST_setDeclarationNodeLinkToSymbol( sym, pNode );
+		boolean isFirstIdentifier = true;
 		
-		return nullNode;
+		SyntaxtreeNode typeNode, declaration, firstSequenceNode, sequenceNode;
+		
+		sequenceNode = nullNode;
+		firstSequenceNode = nullNode;
+		typeNode = isTypeName();
+		
+		if (typeNode.isValid())
+		{
+			// read all listed identifiers
+			do
+			{
+				currentSymbol = scanner.getCurrentSymbol();
+				
+				if (symbolTable.isAnyIdentifierSymbol(currentSymbol))
+				{
+					declaration = new DeclarationNode(line, column, typeNode, currentSymbol);
+					symbolTable.setSymbolNodeLink(currentSymbol, declaration);
+				}
+				else	// no identifier symbol followed type name
+				{
+					line = scanner.getCurrentLine();
+					column = scanner.getCurrentColumn();
+					
+					generalSyntaxError(line, column, "Identifier expected after type name");
+					
+					// TODO: SkipToDelimiter
+					
+					return new ErrorNode(line, column);
+				}
+				
+				// try to read next symbol
+				if (!scanner.getNextSymbol())
+				{
+					syntaxErrorUnexpectedEOF();
+					line = scanner.getCurrentLine();
+					column = scanner.getCurrentColumn();
+					
+					return new ErrorNode(line, column);
+				}
+				
+				line = scanner.getCurrentLine();
+				column = scanner.getCurrentColumn();
+				
+				switch (scanner.getCurrentSymbol())
+				{
+					case SymbolTable.ST_COMMA_SYMBOL:
+						
+						sequenceNode = new SequenceNode(line, column, declaration, sequenceNode);
+						
+						if (isFirstIdentifier)
+						{
+							firstSequenceNode = sequenceNode;
+							isFirstIdentifier = false;
+						}
+						
+						// try to get read symbol
+						if (!scanner.getNextSymbol())
+						{
+							syntaxErrorUnexpectedEOF();
+							line = scanner.getCurrentLine();
+							column = scanner.getCurrentColumn();
+							
+							return new ErrorNode(line, column);
+						}
+						
+						break;
+						
+					case SymbolTable.ST_DELIMITER_SYMBOL:
+						
+						sequenceNode = new SequenceNode(line, column, declaration, sequenceNode);
+						
+						if (isFirstIdentifier)
+						{
+							firstSequenceNode = sequenceNode;
+							isFirstIdentifier = false;
+						}
+						
+						break;
+						
+					default:
+						
+						generalSyntaxError(line, column, "',' or ';' expected after an identifier in a declaration");
+						// TODO: SkipToDelimiter
+						return new ErrorNode(line, column);
+				}
+			}
+			while (scanner.getCurrentSymbol() != SymbolTable.ST_DELIMITER_SYMBOL);
+		}
+		else
+		{
+			return nullNode;
+		}
+		
+		return firstSequenceNode;
 	}
 	
 	private SyntaxtreeNode isTypeName() throws IOException
@@ -315,9 +411,57 @@ public class Parser
 		return nullNode;
 	}
 	
-	
-	private SyntaxtreeNode isIntTerm()
+	/***
+	* intTerm = isIntTerm { multOp intFactor }.
+	 * @throws IOException 
+	**/
+	private SyntaxtreeNode isIntTerm() throws IOException
 	{
+		SyntaxtreeNode leftFactorNode;
+		SyntaxtreeNode rightFactorNode;
+		int currentSymbol;
+		long line;
+		long column;
+		
+		
+		leftFactorNode = isIntFactor();
+		if ( ! leftFactorNode.isValid() )
+		{
+			return nullNode;
+		}
+		
+		currentSymbol = scanner.getCurrentSymbol();
+		
+		while (
+				(currentSymbol == SymbolTable.ST_TIMES_SYMBOL)  ||
+				(currentSymbol == SymbolTable.ST_DIVIDE_SYMBOL) ||
+				(currentSymbol == SymbolTable.ST_MODULO_SYMBOL)
+			  )
+		{
+			line = scanner.getCurrentLine();
+			column = scanner.getCurrentColumn();
+			
+			scanner.getNextSymbol();
+			
+			rightFactorNode = isIntFactor();
+			if (rightFactorNode.isValid())
+			{
+				leftFactorNode = new DyadicOpNode(line, column, leftFactorNode, rightFactorNode, currentSymbol);
+				currentSymbol = scanner.getCurrentSymbol();
+			}
+			else
+			{
+				line = scanner.getCurrentLine();
+				column = scanner.getCurrentColumn();
+				generalSyntaxError(line, column, "intFactor expected after 'multOp'");
+				
+				// TODO: skipToDelimiter
+				return new ErrorNode(line, column);				
+			}
+			
+		}
+		
+		
 		return nullNode;
 	}
 	
@@ -326,8 +470,30 @@ public class Parser
 		return nullNode;
 	}
 	
-	private SyntaxtreeNode isInteger()
+	private SyntaxtreeNode isInteger() throws IOException
 	{
+		int symbol = scanner.getCurrentSymbol();
+		long line = scanner.getCurrentLine();
+		long column = scanner.getCurrentColumn();	
+		
+		if (symbolTable.isAnyNumericSymbol(symbol))
+		{
+			scanner.getNextSymbol();
+			
+			// check if numeric symbol already has an const node linked to
+			SyntaxtreeNode constNode = symbolTable.getSymbolNodeLink(symbol);
+			
+			if ( ! constNode.isValid() )
+			{
+				// if no -> create a new one and link the symbol to it
+				constNode = new ConstNode(line, column, symbol);
+				symbolTable.setSymbolNodeLink(symbol, constNode);
+			}
+			
+			return constNode;
+		}
+		
+		
 		return nullNode;
 	}
 	
@@ -360,18 +526,30 @@ public class Parser
 	
 	private boolean isRelationOpSymbol(int symbol)
 	{
-		return
-		(
-				(symbol == SymbolTable.ST_LT_SYMBOL) ||
-				(symbol == SymbolTable.ST_LE_SYMBOL) ||
-				(symbol == SymbolTable.ST_EQ_SYMBOL) ||
-				(symbol == SymbolTable.ST_GE_SYMBOL) ||
-				(symbol == SymbolTable.ST_GT_SYMBOL) ||
-				(symbol == SymbolTable.ST_NE_SYMBOL)
-		);
+		switch (symbol)
+		{
+			case SymbolTable.ST_LT_SYMBOL:
+			case SymbolTable.ST_LE_SYMBOL:
+			case SymbolTable.ST_EQ_SYMBOL:
+			case SymbolTable.ST_GE_SYMBOL:
+			case SymbolTable.ST_GT_SYMBOL:
+			case SymbolTable.ST_NE_SYMBOL:
+				
+				return true;
+				
+			default:
+				
+				return false;
+				
+		}
 	}
 	
 	private void generalSyntaxError(long line, long column, String message)
+	{
+		
+	}
+	
+	private void syntaxErrorUnexpectedEOF()
 	{
 		
 	}
