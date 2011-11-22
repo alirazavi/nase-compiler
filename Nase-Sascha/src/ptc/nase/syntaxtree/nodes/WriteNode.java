@@ -22,7 +22,7 @@ public class WriteNode extends SyntaxtreeNode
 		}
 		else
 		{
-			Listing.writeInternalError("Identifier of write node (TODO) must not be empty!");
+			Listing.writeInternalError("Identifier of write node " + id + " must not be empty!");
 			return false;
 		}		
 	}

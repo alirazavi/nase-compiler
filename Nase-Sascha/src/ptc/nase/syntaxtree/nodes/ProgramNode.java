@@ -22,7 +22,7 @@ public class ProgramNode extends SyntaxtreeNode
 		}
 		else
 		{
-			Listing.writeInternalError("Program node (TODO) must not have an empty statementSequence");
+			Listing.writeInternalError("Program node " + id + " must not have an empty statementSequence");
 			return false;
 		}
 	}

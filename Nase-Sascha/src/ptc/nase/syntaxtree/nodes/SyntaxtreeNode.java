@@ -23,7 +23,7 @@ public class SyntaxtreeNode
 	protected ArrayList<Long> userEntries;
 	
 	/*
-	 * Default constructors constructs the NULL node
+	 * Default constructor constructs the NULL node
 	 */
 	public SyntaxtreeNode()
 	{
@@ -105,7 +105,7 @@ public class SyntaxtreeNode
 	
 	public boolean checkIntegrity() throws IOException
 	{
-		return true; // TODO: false ???
+		return true;
 	}
 	
 	public boolean isValid()
@@ -113,9 +113,14 @@ public class SyntaxtreeNode
 		return type != NODE_TYPE.NULL;
 	}
 	
+	public int getID()
+	{
+		return id;
+	}
+	
 	public String toString()
 	{
-		String ret = type.toString() + " " + id + " (" + line + "," + column + ")";
+		String ret = id + ": " + type.toString() +  " (" + line + "," + column + ")";
 		
 		if (userEntries != null)
 		{

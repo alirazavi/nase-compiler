@@ -56,6 +56,21 @@ public class SymbolTable
 	
 	private SyntaxtreeNode nullNode;
 	
+	public int getSize()
+	{
+		return numberOfSymbolsInTable + 1;
+	}
+	
+	public SymbolTableEntry getEntry(int symbol)
+	{
+		if (symbol <= numberOfSymbolsInTable )
+		{
+			return (symbolTable[symbol]);
+		}		
+		
+		return null;
+	}
+	
 	public SymbolTable()
 	{
 		symbolTable = new SymbolTableEntry[ST_SYMBOLTABLE_SIZE];
@@ -162,7 +177,10 @@ public class SymbolTable
 				
 			}
 			
-			Console.display("NodeLink: " + symbolTable[i].nodeLink);
+			if (symbolTable[i].nodeLink == null)
+				Console.display("NodeLink: " + symbolTable[i].nodeLink);
+			else
+				Console.display("NodeLink: " + symbolTable[i].nodeLink.getID());
 			Console.display(" -- " + symbolTable[i].sRepresentation);
 			Console.display("\r\n");
 		}

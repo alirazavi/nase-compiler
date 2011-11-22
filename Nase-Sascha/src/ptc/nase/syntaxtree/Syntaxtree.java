@@ -1,5 +1,7 @@
 package ptc.nase.syntaxtree;
 
+import java.io.IOException;
+
 import ptc.nase.syntaxtree.nodes.SyntaxtreeNode;
 
 public class Syntaxtree 
@@ -19,5 +21,10 @@ public class Syntaxtree
 	public void setRoot(SyntaxtreeNode root)
 	{
 		this.root = root;
+	}
+	
+	public boolean checkIntegrity() throws IOException
+	{
+		return root.checkIntegrity();
 	}
 }

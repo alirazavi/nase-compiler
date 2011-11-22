@@ -39,12 +39,12 @@ import ptc.nase.Nase;
 
 	public long getCurrentLine()
 	{
-		return 0;
+		return yycolumn + 1;
 	}
 	
 	public long getCurrentColumn()
 	{
-		return 0;
+		return yyline + 1;
 	}
 	
 	public SymbolTable getSymbolTable()
@@ -55,10 +55,14 @@ import ptc.nase.Nase;
 	public boolean getNextSymbol() throws IOException
 	{
 		currentSymbol = yylex();
-		
-		System.out.println("yylex()");
 			
 		return true;
+	}
+	
+	public void skipToDelimiter()
+	{
+		//TODO
+		System.out.println("TODO: skipToDelimiter");
 	}
 	
 	public int getCurrentSymbol()
