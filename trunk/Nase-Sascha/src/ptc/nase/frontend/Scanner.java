@@ -40,6 +40,12 @@ public class Scanner implements IScanner
 		specialChars = symbolTable.getSpecialCharList();
 	}
 	
+	public void skipToDelimiter()
+	{
+		//TODO
+		System.out.println("TODO: skipToDelimiter");
+	}
+	
 	public long getCurrentLine()
 	{
 		return infile.currentLineNr();

@@ -3,7 +3,6 @@ package ptc.nase;
 import java.io.*;
 import java.util.ArrayList;
 
-import ptc.nase.exceptions.GeneralSyntaxError;
 import ptc.nase.frontend.IScanner;
 import ptc.nase.frontend.Infile;
 import ptc.nase.frontend.JFlexNaseScanner;
@@ -49,8 +48,6 @@ public class Nase
 		catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (GeneralSyntaxError e) {
 			e.printStackTrace();
 		}
 		

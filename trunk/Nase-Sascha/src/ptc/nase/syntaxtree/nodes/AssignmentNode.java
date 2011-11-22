@@ -29,7 +29,7 @@ public class AssignmentNode extends SyntaxtreeNode
 					}
 					else // assignment has no intExpression (right hand side)
 					{
-						Listing.writeInternalError("Assignment node (TODO) has no intExpression");
+						Listing.writeInternalError("Assignment node " + id + " has no intExpression");
 						return false;
 					}
 					
@@ -41,7 +41,7 @@ public class AssignmentNode extends SyntaxtreeNode
 		}
 		else // assignment has no identifier
 		{
-			Listing.writeInternalError("Assignment node (TODO) has no identifier");
+			Listing.writeInternalError("Assignment node " + id + " has no identifier");
 			return false;
 		}
 	}

@@ -22,7 +22,7 @@ public class ReadNode extends SyntaxtreeNode
 		}
 		else
 		{
-			Listing.writeInternalError("Identifier of read node (TODO) must not be empty!");
+			Listing.writeInternalError("Identifier of read node " + id + " must not be empty!");
 			return false;
 		}		
 	}

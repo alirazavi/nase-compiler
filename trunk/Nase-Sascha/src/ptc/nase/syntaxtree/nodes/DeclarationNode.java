@@ -24,7 +24,7 @@ public class DeclarationNode extends SyntaxtreeNode
 		}
 		else
 		{
-			Listing.writeInternalError("Declaration node (TODO) must not have an empty type child");
+			Listing.writeInternalError("Declaration node " + id + " must not have an empty type child");
 			return false;
 		}		
 	}

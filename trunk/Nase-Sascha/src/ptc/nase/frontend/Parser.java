@@ -6,14 +6,11 @@ import javax.swing.JFrame;
 
 import ptc.nase.SymbolTable;
 import ptc.nase.SyntaxtreeView;
-import ptc.nase.exceptions.GeneralSyntaxError;
 import ptc.nase.syntaxtree.*;
 import ptc.nase.syntaxtree.nodes.*;
 
-@SuppressWarnings("unused")
 public class Parser 
 {
-	
 	private final boolean DEBUG_PARSER = true; 
 	
 	private IScanner scanner;
@@ -31,6 +28,9 @@ public class Parser
 		syntaxtree = null;
 	}
 	
+	/***
+	* read = READ_SYMBOL identifier.
+	*/
 	private SyntaxtreeNode isRead() throws IOException
 	{
 		long line = scanner.getCurrentLine();
@@ -51,7 +51,7 @@ public class Parser
 				line = scanner.getCurrentLine();
 				column = scanner.getCurrentColumn();
 				
-				// TODO: skip to delimiter
+				scanner.skipToDelimiter();
 				
 				return new ErrorNode(line, column);
 			}
@@ -60,6 +60,9 @@ public class Parser
 		return nullNode;
 	}
 	
+	/***
+	* write = WRITE_SYMBOL identifier.
+	*/
 	private SyntaxtreeNode isWrite() throws IOException
 	{
 		long line = scanner.getCurrentLine();
@@ -81,7 +84,7 @@ public class Parser
 				line = scanner.getCurrentLine();
 				column = scanner.getCurrentColumn();
 				
-				// TODO: skip to delimiter
+				scanner.skipToDelimiter();
 				
 				return new ErrorNode(line, column);
 			}
@@ -90,6 +93,9 @@ public class Parser
 		return nullNode;
 	}	
 	
+	/***
+	* identifier = ANY_LETTER { ANY_DIGIT | ANY_LETTER }.
+	**/
 	private SyntaxtreeNode isIdentifier() throws IOException
 	{
 		int currentSymbol;
@@ -108,6 +114,9 @@ public class Parser
 		return nullNode;
 	}
 	
+	/***
+	* statement = [ declaration | assignment | read | write ] DELIMITER_SYMBOL.
+	**/
 	private SyntaxtreeNode isStatement() throws IOException
 	{
 		SyntaxtreeNode statement = nullNode;
@@ -154,6 +163,9 @@ public class Parser
 		
 	}		
 	
+	/***
+	* statementSequence = statement { statement }.
+	**/
 	private SyntaxtreeNode isStatementSequence() throws IOException
 	{
 		long line = scanner.getCurrentLine();
@@ -188,7 +200,10 @@ public class Parser
 		return firstStatementSequence;
 	}
 	
-	private SyntaxtreeNode isProgram() throws IOException, GeneralSyntaxError
+	/***
+	* program = statementSequence EOF_SYMBOL.
+	**/
+	private SyntaxtreeNode isProgram() throws IOException
 	{
 		long line = scanner.getCurrentLine();
 		long column = scanner.getCurrentColumn();
@@ -216,39 +231,9 @@ public class Parser
 		return nullNode;
 	}
 	
-	public boolean parseProgram() throws IOException, GeneralSyntaxError
-	{
-		SyntaxtreeNode rootNode;
-		
-		Listing.write("");
-		
-		rootNode = isProgram();
-		
-		if (DEBUG_PARSER)
-		{
-			symbolTable.dumpSymbolTable();		
-		}
-		
-		if (rootNode.isValid())
-		{		
-			syntaxtree = new Syntaxtree(rootNode);
-			
-			if (DEBUG_PARSER)
-			{
-				treeView = new SyntaxtreeView(syntaxtree);
-				treeView.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				treeView.setSize(1024, 768);
-				treeView.setVisible(true);
-			}
-		}
-		else
-		{
-			return false;
-		}
-		
-		return true;
-	}
-	
+	/***
+	* declaration = typeName identifier { COMMA_SYMBOL identifier }.
+	**/
 	private SyntaxtreeNode isDeclaration() throws IOException
 	{
 		long line = scanner.getCurrentLine();
@@ -277,14 +262,7 @@ public class Parser
 				}
 				else	// no identifier symbol followed type name
 				{
-					line = scanner.getCurrentLine();
-					column = scanner.getCurrentColumn();
-					
-					generalSyntaxError(line, column, "Identifier expected after type name");
-					
-					// TODO: SkipToDelimiter
-					
-					return new ErrorNode(line, column);
+					return expectedSymbolError("Identifier expected after type name");
 				}
 				
 				// try to read next symbol
@@ -338,9 +316,8 @@ public class Parser
 						
 					default:
 						
-						generalSyntaxError(line, column, "',' or ';' expected after an identifier in a declaration");
-						// TODO: SkipToDelimiter
-						return new ErrorNode(line, column);
+						return expectedSymbolError("',' or ';' expected after an identifier in a declaration");
+						
 				}
 			}
 			while (scanner.getCurrentSymbol() != SymbolTable.ST_DELIMITER_SYMBOL);
@@ -353,6 +330,9 @@ public class Parser
 		return firstSequenceNode;
 	}
 	
+	/***
+	* typeName = INT_TYPE_SYMBOL.
+	**/
 	private SyntaxtreeNode isTypeName() throws IOException
 	{
 		long line = scanner.getCurrentLine();
@@ -367,6 +347,9 @@ public class Parser
 		return nullNode;
 	}
 	
+	/***
+	* assignment = identifier ASSIGN_SYMBOL intExpr.
+	*/
 	private SyntaxtreeNode isAssignment() throws IOException
 	{
 		long line;
@@ -406,9 +389,74 @@ public class Parser
 		return nullNode;
 	}
 	
-	private SyntaxtreeNode isIntExpression()
+	/***
+	* intExpr = [ MINUS_SYMBOL ] term { addOp term }.
+	 * @throws IOException 
+	**/
+	private SyntaxtreeNode isIntExpression() throws IOException
 	{
-		return nullNode;
+		boolean minusFlag = false;
+		SyntaxtreeNode leftTermNode, minusPrefixNode, rightTermNode, newTermNode;
+		long minusSignLine, minusSignColumn;
+		int currentSymbol;
+		
+		long line;
+		long column;
+		
+		minusSignLine = scanner.getCurrentLine();
+		minusSignColumn = scanner.getCurrentColumn();
+		
+		if (scanner.getCurrentSymbol() == SymbolTable.ST_MINUS_SYMBOL)
+		{
+			scanner.getNextSymbol();
+			minusFlag = true;
+		}
+		
+		leftTermNode = isIntTerm();
+		
+		if (!leftTermNode.isValid())
+		{
+			if(minusFlag)
+			{
+				return expectedSymbolError("intTerm expected after '-'");
+					
+			}
+			else
+			{
+				return nullNode;
+			}
+		}
+		
+		if (minusFlag)
+		{
+			minusPrefixNode = new MonadicOpNode(minusSignLine, minusSignColumn, leftTermNode, SymbolTable.ST_MINUS_SYMBOL);
+			leftTermNode = minusPrefixNode;
+		}
+		
+		currentSymbol = scanner.getCurrentSymbol();
+		
+		while ( (currentSymbol == SymbolTable.ST_MINUS_SYMBOL) || (currentSymbol == SymbolTable.ST_PLUS_SYMBOL) )
+		{
+			line = scanner.getCurrentLine();
+			column = scanner.getCurrentColumn();
+			scanner.getNextSymbol();
+			
+			rightTermNode = isIntTerm();
+			
+			if (rightTermNode.isValid())
+			{
+				newTermNode = new DyadicOpNode(line, column, leftTermNode, rightTermNode, currentSymbol);
+				leftTermNode = newTermNode;
+				
+				currentSymbol = scanner.getCurrentSymbol();
+			}
+			else
+			{
+				return expectedSymbolError("intTerm expected after 'addOp'");
+			}
+		}
+		
+		return leftTermNode;
 	}
 	
 	/***
@@ -451,12 +499,7 @@ public class Parser
 			}
 			else
 			{
-				line = scanner.getCurrentLine();
-				column = scanner.getCurrentColumn();
-				generalSyntaxError(line, column, "intFactor expected after 'multOp'");
-				
-				// TODO: skipToDelimiter
-				return new ErrorNode(line, column);				
+				return expectedSymbolError("intFactor expected after 'multOp'");		
 			}
 			
 		}
@@ -465,11 +508,74 @@ public class Parser
 		return nullNode;
 	}
 	
-	private SyntaxtreeNode isIntFactor()
+	/***
+	* intFactor = integer | identifier | OPEN_PARAENTHESIS_SYMBOL intExpr CLOSE_PARENTHESIS_SYMBOL | inlineIfStatement.
+	 * @throws IOException 
+	**/
+	private SyntaxtreeNode isIntFactor() throws IOException
 	{
-		return nullNode;
+		long line = scanner.getCurrentLine();
+		long column = scanner.getCurrentColumn();
+		SyntaxtreeNode intFactor, intExpression;
+		
+		intFactor = isInteger();
+		if (intFactor.isValid())
+		{
+			return intFactor;
+		}
+		else
+		{
+			intFactor = isIdentifier();
+			if (intFactor.isValid())
+			{
+				return intFactor;
+			}
+			else
+			{
+				if (scanner.getCurrentSymbol() == SymbolTable.ST_OPEN_PARENTHESIS_SYMBOL)
+				{
+					scanner.getNextSymbol();
+					
+					intExpression = isIntExpression();
+					if (intExpression.isValid())
+					{
+						if (scanner.getCurrentSymbol() == SymbolTable.ST_CLOSE_PARENTHESIS_SYMBOL)
+						{
+							scanner.getNextSymbol();
+							
+							return new ParenthesisNode(line, column, intExpression);
+						}
+						else	// no closing parenthesis symbol
+						{
+							return expectedSymbolError("')' expected after '(' intExpr");
+						}
+					}
+					else	// no intExpression after (
+					{
+						return expectedSymbolError("intExpression expected after (");
+					}
+					
+				}
+				else
+				{
+					intFactor = isInlineIf();
+					if (intFactor.isValid())
+					{
+						return intFactor;
+					}
+					else // no intFactor rule hit
+					{
+						return nullNode;	// ?
+						//return expectedSymbolError("intFactor expected"); 
+					}
+				}
+			}
+		}
 	}
 	
+	/***
+	* integer = ANY_DIGIT { ANY_DIGIT }.
+	**/
 	private SyntaxtreeNode isInteger() throws IOException
 	{
 		int symbol = scanner.getCurrentSymbol();
@@ -480,7 +586,7 @@ public class Parser
 		{
 			scanner.getNextSymbol();
 			
-			// check if numeric symbol already has an const node linked to
+			// check if numeric symbol already has a const node linked to
 			SyntaxtreeNode constNode = symbolTable.getSymbolNodeLink(symbol);
 			
 			if ( ! constNode.isValid() )
@@ -493,20 +599,172 @@ public class Parser
 			return constNode;
 		}
 		
+		return nullNode;
+	}
+	
+	/***
+	* inlineIfStatement = INLINE_IF_SYMBOL boolExpr INLINE_THEN_SYMBOL intExpr INLINE_ELSE_SYMBOL intExpr INLINE_FI_SYMBOL.
+	**/
+	private SyntaxtreeNode isInlineIf() throws IOException
+	{
+		SyntaxtreeNode boolExpression, thenIntExpression, elseIntExpression;
 		
-		return nullNode;
+		long line = scanner.getCurrentLine();
+		long column = scanner.getCurrentColumn();			
+		
+		if (scanner.getCurrentSymbol() == SymbolTable.ST_INLINE_IF_SYMBOL)
+		{
+			scanner.getNextSymbol();
+			
+			boolExpression = isBoolExpression();
+			if (boolExpression.isValid())
+			{
+				if (scanner.getCurrentSymbol() == SymbolTable.ST_INLINE_THEN_SYMBOL)
+				{
+					thenIntExpression = isIntExpression();
+					if (thenIntExpression.isValid())
+					{
+						if (scanner.getCurrentSymbol() == SymbolTable.ST_INLINE_ELSE_SYMBOL)
+						{
+							elseIntExpression = isIntExpression();
+							if (elseIntExpression.isValid())
+							{
+								if (scanner.getCurrentSymbol() == SymbolTable.ST_INLINE_FI_SYMBOL)
+								{
+									scanner.getNextSymbol();
+									return new InlineIfNode(line, column, boolExpression, thenIntExpression, elseIntExpression);
+								}
+								else // no FI symbol
+								{
+									return expectedSymbolError("'FI' expected after ':' intExpr");
+								}
+							}
+							else // no else-intExpr
+							{
+								return expectedSymbolError("intExpr expected after ':'");
+							}
+						}
+						else // no else symbol
+						{
+							return expectedSymbolError("':' expected after '?' intExpr");
+						}
+					}
+					else // no then-intExpr
+					{
+						return expectedSymbolError("intExpr expected after '?'");
+					}
+				}
+				else	// no then symbol
+				{
+					return expectedSymbolError("'?' expected after 'IIF' boolExpr");
+				}	
+			}
+			else // no boolExpression after inline if
+			{
+				return expectedSymbolError("boolExpr expected after 'IIF'");
+			}		
+		}
+		else	// currentSymbol != ST_INLINE_IF_SYMBOL
+		{
+			return nullNode;
+		}
 	}
 	
-	private SyntaxtreeNode isInlineIf()
+	/***
+	* boolExpr = intExpr relationOp intExpr { boolOp intExpr relationOp intExpr }.
+	 * @throws IOException 
+	**/
+	private SyntaxtreeNode isBoolExpression() throws IOException
 	{
-		return nullNode;
-	}
+		
+		SyntaxtreeNode leftIntExpression, rightIntExpression;
+		SyntaxtreeNode newBoolExpression1, newBoolExpression2, newBoolExpression3;
+		long line;
+		long column;
+		int currentSymbol, currentSymbolForBoolOp;
+		
+		leftIntExpression = isIntExpression();
+		if (leftIntExpression.isValid())
+		{
+			line = scanner.getCurrentLine();
+			column = scanner.getCurrentColumn();
+			currentSymbol = scanner.getCurrentSymbol();
+			
+			if (isRelationOpSymbol(currentSymbol))
+			{
+				rightIntExpression = isIntExpression();
+				if (rightIntExpression.isValid())
+				{
+					newBoolExpression1 = new DyadicOpNode(line, column, leftIntExpression, rightIntExpression, currentSymbol);
+				}
+				else	// no intExpr after relationOp
+				{
+					return expectedSymbolError("intExpr expected after relationOp");
+				}
+			}
+			else	// no relationOp after intExpr
+			{
+				return expectedSymbolError("'relationOp' expected after intExpr");
+			}
+			
+		}
+		else
+		{
+			return nullNode;
+		}
 	
-	private SyntaxtreeNode isBoolExpression()
-	{
-		return nullNode;
+		currentSymbolForBoolOp = scanner.getCurrentSymbol();
+		
+		while ( 
+				(currentSymbolForBoolOp == SymbolTable.ST_AND_SYMBOL) ||
+				(currentSymbolForBoolOp == SymbolTable.ST_OR_SYMBOL)
+			  )
+		{
+			
+			line = scanner.getCurrentLine();
+			column = scanner.getCurrentColumn();
+			scanner.getNextSymbol();
+			
+			leftIntExpression = isIntExpression();
+			if (leftIntExpression.isValid())
+			{
+				currentSymbol = scanner.getCurrentSymbol();
+				if (isRelationOpSymbol(currentSymbol))
+				{
+					scanner.getNextSymbol();
+					
+					rightIntExpression = isIntExpression();
+					if (rightIntExpression.isValid())
+					{
+						newBoolExpression2 = new DyadicOpNode(line, column, leftIntExpression, rightIntExpression, currentSymbol);
+						newBoolExpression3 = new DyadicOpNode(line, column, newBoolExpression1, newBoolExpression2, currentSymbolForBoolOp);
+						newBoolExpression1 = newBoolExpression3;
+						
+						currentSymbolForBoolOp = scanner.getCurrentSymbol();
+					}
+					else	// no intExpr after relationOp	
+					{
+						return expectedSymbolError("intExpr expected after relationOp");
+					}
+				}
+				else	// no relationOp after intExpr
+				{
+					return expectedSymbolError("'relationOp' expected after intExpr");
+				}
+			}
+			else	// no intExpr after boolOp
+			{
+				return expectedSymbolError("intExpr expected after boolOp");
+			}
+			
+		}
+		
+		return newBoolExpression1;
 	}	
 	
+	/***
+	* checks for EOF_SYMBOL
+	**/
 	private boolean isEOFSymbol()
 	{
 		return scanner.getCurrentSymbol() == SymbolTable.ST_EOF_SYMBOL;
@@ -519,11 +777,15 @@ public class Parser
 		
 		generalSyntaxError(line, column, message);
 		
-		// TODO: skipToDelimiter
+		scanner.skipToDelimiter();
 		
 		return new ErrorNode(line, column);		
 	}
 	
+	/***
+	* checks for one of the relational Op's
+	* relationOp = LT_SYMBOL | LE_SYMBOL | EQ_SYMBOL | GE_SYMBOL | GT_SYMBOL | NE_SYMBOL.
+	**/
 	private boolean isRelationOpSymbol(int symbol)
 	{
 		switch (symbol)
@@ -542,6 +804,41 @@ public class Parser
 				return false;
 				
 		}
+	}
+	
+	public boolean parseProgram() throws IOException
+	{
+		SyntaxtreeNode rootNode;
+		
+		Listing.write("");
+		
+		rootNode = isProgram();
+		
+		if (DEBUG_PARSER)
+		{
+			symbolTable.dumpSymbolTable();		
+		}
+		
+		if (rootNode.isValid())
+		{		
+			syntaxtree = new Syntaxtree(rootNode);
+			
+			syntaxtree.checkIntegrity();
+			
+			if (DEBUG_PARSER)
+			{
+				treeView = new SyntaxtreeView(syntaxtree, scanner.getSymbolTable());
+				treeView.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				treeView.setSize(1024, 768);
+				treeView.setVisible(true);
+			}
+		}
+		else
+		{
+			return false;
+		}
+		
+		return true;
 	}
 	
 	private void generalSyntaxError(long line, long column, String message)

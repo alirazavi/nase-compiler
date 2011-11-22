@@ -55,7 +55,7 @@ public class SequenceNode extends SyntaxtreeNode
 		}
 		else // sequence node has no statement
 		{
-			Listing.writeInternalError("Sequence node (TODO) has no statement");
+			Listing.writeInternalError("Sequence node " + id + " has no statement");
 			return false;
 		}
 	}
