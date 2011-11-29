@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import ptc.nase.syntaxtree.nodes.SyntaxtreeNode;
+import ptc.nase.syntaxtree.nodes.ConstNode;
 
 public class SymbolTable 
 {
@@ -45,6 +46,12 @@ public class SymbolTable
 	public static final int ST_NE_SYMBOL = 26;
 	public static final int ST_READ_SYMBOL = 27;
 	public static final int ST_WRITE_SYMBOL = 28;
+	
+	
+	public static final int ST_BOOL_TYPE_SYMBOL = 29;
+	public static final int ST_TRUE_SYMBOL = 30;
+	public static final int ST_FALSE_SYMBOL = 31;
+	public static final int ST_NOT_SYMBOL = 32;
 	
 	private static final int ST_FIXED_SYMBOLS = 100;
 	private static final int ST_USER_SYMBOLS = 1000;
@@ -134,6 +141,27 @@ public class SymbolTable
 		setBreackingCharSeq( ST_NE_SYMBOL );
 		symbolTable[ST_READ_SYMBOL].sRepresentation = "READ";
 		symbolTable[ST_WRITE_SYMBOL].sRepresentation = "WRITE";
+		
+		
+		/*
+		 * 
+		 * 	public static final int ST_BOOL_TYPE_SYMBOL = 29;
+	public static final int ST_TRUE_SYMBOL = 30;
+	public static final int ST_FALSE_SYMBOL = 31;
+	public static final int ST_NOT_SYMBOL = 32;
+		 * 
+		 */
+		
+		symbolTable[ST_BOOL_TYPE_SYMBOL].sRepresentation = "BOOLEAN";
+		symbolTable[ST_TRUE_SYMBOL].sRepresentation = "TRUE";
+		symbolTable[ST_TRUE_SYMBOL].yielding = 1;
+		symbolTable[ST_TRUE_SYMBOL].nodeLink = new ConstNode(-1, -1, ST_TRUE_SYMBOL);
+		
+		symbolTable[ST_FALSE_SYMBOL].sRepresentation = "FALSE";
+		symbolTable[ST_FALSE_SYMBOL].yielding = 0;
+		symbolTable[ST_FALSE_SYMBOL].nodeLink = new ConstNode(-1, -1, ST_FALSE_SYMBOL);
+		
+		symbolTable[ST_NOT_SYMBOL].sRepresentation = "NOT";
 		
 		numberOfSymbolsInTable = ST_FIXED_SYMBOLS;
 	}

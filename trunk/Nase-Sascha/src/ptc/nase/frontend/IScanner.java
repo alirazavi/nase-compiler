@@ -11,5 +11,5 @@ public interface IScanner
 	public SymbolTable getSymbolTable();
 	public boolean getNextSymbol() throws IOException;
 	public int getCurrentSymbol();
-	public void skipToDelimiter();
+	public void skipToDelimiter() throws IOException;
 }

@@ -331,24 +331,32 @@ public class Parser
 	}
 	
 	/***
-	* typeName = INT_TYPE_SYMBOL.
+	* typeName = INT_TYPE_SYMBOL | BOOL_TYPE_SYMBOL
 	**/
 	private SyntaxtreeNode isTypeName() throws IOException
 	{
 		long line = scanner.getCurrentLine();
-		long column = scanner.getCurrentColumn();		
+		long column = scanner.getCurrentColumn();
+		int currentSymbol = scanner.getCurrentSymbol();
 		
-		if (scanner.getCurrentSymbol() == SymbolTable.ST_INT_TYPE_SYMBOL)
+		switch (currentSymbol)
 		{
-			scanner.getNextSymbol();
-			return new TypeNode(line, column, SymbolTable.ST_INT_TYPE_SYMBOL);
+			case SymbolTable.ST_INT_TYPE_SYMBOL:
+			case SymbolTable.ST_BOOL_TYPE_SYMBOL:
+				
+				scanner.getNextSymbol();
+				return new TypeNode(line, column, currentSymbol);
+				
+			default:
+				
+				return nullNode;
+					
 		}
 		
-		return nullNode;
 	}
 	
 	/***
-	* assignment = identifier ASSIGN_SYMBOL intExpr.
+	* assignment = identifier ASSIGN_SYMBOL (intExpr | boolExpr).
 	*/
 	private SyntaxtreeNode isAssignment() throws IOException
 	{
@@ -356,7 +364,7 @@ public class Parser
 		long column;		
 		
 		SyntaxtreeNode identifier;
-		SyntaxtreeNode intExpression;
+		SyntaxtreeNode intExpression, boolExpression;
 		
 		identifier = isIdentifier();
 		if (identifier.getType() != NODE_TYPE.NULL)
@@ -367,15 +375,19 @@ public class Parser
 			if (scanner.getCurrentSymbol() == SymbolTable.ST_ASSIGN_SYMBOL)
 			{
 				scanner.getNextSymbol();
-				intExpression = isIntExpression();
 				
-				if ( intExpression.isValid() )
+				
+				if ( (intExpression = isIntExpression()).isValid() )
 				{
 					return new AssignmentNode(line, column, identifier, intExpression);
 				}
+				else if ((boolExpression = isBoolExpression()).isValid())
+				{
+					return new AssignmentNode(line, column, identifier, boolExpression);
+				}
 				else	// integer expression expected
 				{
-					return expectedSymbolError("Expected integer expression on right hand side of ':='");
+					return expectedSymbolError("Expected integer or bool expression on right hand side of ':='");
 				}
 				
 			}
@@ -390,21 +402,21 @@ public class Parser
 	}
 	
 	/***
-	* intExpr = [ MINUS_SYMBOL ] term { addOp term }.
+	* intExpr = [ MINUS_SYMBOL ] IntTerm { addOp IntTerm }.
 	 * @throws IOException 
 	**/
 	private SyntaxtreeNode isIntExpression() throws IOException
 	{
 		boolean minusFlag = false;
-		SyntaxtreeNode leftTermNode, minusPrefixNode, rightTermNode, newTermNode;
-		long minusSignLine, minusSignColumn;
+		SyntaxtreeNode leftTerm, minusPrefixNode, rightTerm, newTerm;
+		long minusSymbolLine, minusSymbolColumn;
 		int currentSymbol;
 		
 		long line;
 		long column;
 		
-		minusSignLine = scanner.getCurrentLine();
-		minusSignColumn = scanner.getCurrentColumn();
+		minusSymbolLine = scanner.getCurrentLine();
+		minusSymbolColumn = scanner.getCurrentColumn();
 		
 		if (scanner.getCurrentSymbol() == SymbolTable.ST_MINUS_SYMBOL)
 		{
@@ -412,9 +424,9 @@ public class Parser
 			minusFlag = true;
 		}
 		
-		leftTermNode = isIntTerm();
+		leftTerm = isIntTerm();
 		
-		if (!leftTermNode.isValid())
+		if (!leftTerm.isValid())
 		{
 			if(minusFlag)
 			{
@@ -429,8 +441,8 @@ public class Parser
 		
 		if (minusFlag)
 		{
-			minusPrefixNode = new MonadicOpNode(minusSignLine, minusSignColumn, leftTermNode, SymbolTable.ST_MINUS_SYMBOL);
-			leftTermNode = minusPrefixNode;
+			minusPrefixNode = new MonadicOpNode(minusSymbolLine, minusSymbolColumn, leftTerm, SymbolTable.ST_MINUS_SYMBOL);
+			leftTerm = minusPrefixNode;
 		}
 		
 		currentSymbol = scanner.getCurrentSymbol();
@@ -441,12 +453,12 @@ public class Parser
 			column = scanner.getCurrentColumn();
 			scanner.getNextSymbol();
 			
-			rightTermNode = isIntTerm();
+			rightTerm = isIntTerm();
 			
-			if (rightTermNode.isValid())
+			if (rightTerm.isValid())
 			{
-				newTermNode = new DyadicOpNode(line, column, leftTermNode, rightTermNode, currentSymbol);
-				leftTermNode = newTermNode;
+				newTerm = new DyadicOpNode(line, column, leftTerm, rightTerm, currentSymbol);
+				leftTerm = newTerm;
 				
 				currentSymbol = scanner.getCurrentSymbol();
 			}
@@ -456,11 +468,27 @@ public class Parser
 			}
 		}
 		
-		return leftTermNode;
+		return leftTerm;
+	}
+	
+	private boolean isMultOpSymbol(int symbol)
+	{
+		switch (symbol)
+		{
+			case SymbolTable.ST_TIMES_SYMBOL:
+			case SymbolTable.ST_DIVIDE_SYMBOL:
+			case SymbolTable.ST_MODULO_SYMBOL:
+				
+				return true;
+				
+			default:
+				
+				return false;
+		}
 	}
 	
 	/***
-	* intTerm = isIntTerm { multOp intFactor }.
+	* intTerm = intFactor { multOp intFactor }.
 	 * @throws IOException 
 	**/
 	private SyntaxtreeNode isIntTerm() throws IOException
@@ -480,11 +508,7 @@ public class Parser
 		
 		currentSymbol = scanner.getCurrentSymbol();
 		
-		while (
-				(currentSymbol == SymbolTable.ST_TIMES_SYMBOL)  ||
-				(currentSymbol == SymbolTable.ST_DIVIDE_SYMBOL) ||
-				(currentSymbol == SymbolTable.ST_MODULO_SYMBOL)
-			  )
+		while ( isMultOpSymbol(currentSymbol) )
 		{
 			line = scanner.getCurrentLine();
 			column = scanner.getCurrentColumn();
@@ -504,8 +528,7 @@ public class Parser
 			
 		}
 		
-		
-		return nullNode;
+		return leftFactorNode;
 	}
 	
 	/***
@@ -516,60 +539,49 @@ public class Parser
 	{
 		long line = scanner.getCurrentLine();
 		long column = scanner.getCurrentColumn();
-		SyntaxtreeNode intFactor, intExpression;
+		SyntaxtreeNode intFactor, intExpression, identifier, inlineIF;
 		
-		intFactor = isInteger();
-		if (intFactor.isValid())
+		
+		if ( (intFactor = isInteger()).isValid() )
 		{
 			return intFactor;
 		}
-		else
+		else if ( (identifier = isIdentifier()).isValid() )
 		{
-			intFactor = isIdentifier();
-			if (intFactor.isValid())
+			return identifier;
+		}
+		else if (scanner.getCurrentSymbol() == SymbolTable.ST_OPEN_PARENTHESIS_SYMBOL)
+		{
+			scanner.getNextSymbol();
+			
+			intExpression = isIntExpression();
+			if (intExpression.isValid())
 			{
-				return intFactor;
-			}
-			else
-			{
-				if (scanner.getCurrentSymbol() == SymbolTable.ST_OPEN_PARENTHESIS_SYMBOL)
+				if (scanner.getCurrentSymbol() == SymbolTable.ST_CLOSE_PARENTHESIS_SYMBOL)
 				{
 					scanner.getNextSymbol();
 					
-					intExpression = isIntExpression();
-					if (intExpression.isValid())
-					{
-						if (scanner.getCurrentSymbol() == SymbolTable.ST_CLOSE_PARENTHESIS_SYMBOL)
-						{
-							scanner.getNextSymbol();
-							
-							return new ParenthesisNode(line, column, intExpression);
-						}
-						else	// no closing parenthesis symbol
-						{
-							return expectedSymbolError("')' expected after '(' intExpr");
-						}
-					}
-					else	// no intExpression after (
-					{
-						return expectedSymbolError("intExpression expected after (");
-					}
-					
+					return new ParenthesisNode(line, column, intExpression);
 				}
-				else
+				else	// no closing parenthesis symbol
 				{
-					intFactor = isInlineIf();
-					if (intFactor.isValid())
-					{
-						return intFactor;
-					}
-					else // no intFactor rule hit
-					{
-						return nullNode;	// ?
-						//return expectedSymbolError("intFactor expected"); 
-					}
+					return expectedSymbolError("')' expected after '(' intExpr");
 				}
 			}
+			else	// no intExpression after (
+			{
+				return expectedSymbolError("intExpression expected after (");
+			}
+					
+		}
+		else if ( (inlineIF = isInlineIf()).isValid() )
+		{
+			return inlineIF;
+		}
+		else // no intFactor rule hit
+		{
+			return nullNode;	// ?
+			//return expectedSymbolError("intFactor expected"); 
 		}
 	}
 	
@@ -621,11 +633,13 @@ public class Parser
 			{
 				if (scanner.getCurrentSymbol() == SymbolTable.ST_INLINE_THEN_SYMBOL)
 				{
+					scanner.getNextSymbol();
 					thenIntExpression = isIntExpression();
 					if (thenIntExpression.isValid())
 					{
 						if (scanner.getCurrentSymbol() == SymbolTable.ST_INLINE_ELSE_SYMBOL)
 						{
+							scanner.getNextSymbol();
 							elseIntExpression = isIntExpression();
 							if (elseIntExpression.isValid())
 							{
@@ -636,7 +650,7 @@ public class Parser
 								}
 								else // no FI symbol
 								{
-									return expectedSymbolError("'FI' expected after ':' intExpr");
+									return expectedSymbolError("'FII' expected after ':' intExpr");
 								}
 							}
 							else // no else-intExpr
@@ -670,11 +684,274 @@ public class Parser
 		}
 	}
 	
+	/**
+	 * boolTerm = boolFactor { AND_SYMBOL boolFactor }.
+	 * @throws IOException 
+	 */
+	private SyntaxtreeNode isBoolTerm() throws IOException
+	{
+		SyntaxtreeNode leftFactor, rightFactor, newFactor;
+		int currentSymbol;
+		long line, column;
+		
+		leftFactor = isBoolFactor();
+		
+		if (!leftFactor.isValid())
+		{
+			return nullNode;
+		}
+		
+		currentSymbol = scanner.getCurrentSymbol();
+		
+		while (currentSymbol == SymbolTable.ST_AND_SYMBOL)
+		{
+			line = scanner.getCurrentLine();
+			column = scanner.getCurrentColumn();
+			
+			scanner.getNextSymbol();
+			
+			rightFactor = isBoolFactor();
+			
+			if (rightFactor.isValid())
+			{
+				newFactor = new DyadicOpNode(line, column, leftFactor, rightFactor, SymbolTable.ST_AND_SYMBOL);
+				leftFactor = newFactor;
+				
+				currentSymbol = scanner.getCurrentSymbol();
+			}
+			else
+			{
+				return expectedSymbolError("boolFactor expected after 'AND'");
+			}
+			
+		}
+		
+		return leftFactor;
+	}
+	
+	/**
+	 * boolFactor = TRUE_SYMBOL | FALSE_SYMBOL | 
+	 * 				[ NOT_SYMBOL ] intExpr relationOp intExpr |
+	 * 				[ NOT_SYMBOL ] OPEN_PARENTHESIS_SYMBOL boolExpression CLOSE_PARENTHESIS_SYMBOL. 
+	 */
+	private SyntaxtreeNode isBoolFactor() throws IOException
+	{
+		boolean notFlag = false;
+		long notSymbolLine, notSymbolColumn;
+		int currentSymbol;
+		SyntaxtreeNode leftIntExpression = nullNode, rightIntExpression = nullNode, identifier = nullNode;
+		SyntaxtreeNode boolFactor = nullNode, notPrefixNode = nullNode;
+		long line, column;
+		
+		notSymbolLine = scanner.getCurrentLine();
+		notSymbolColumn = scanner.getCurrentColumn();
+		
+		if (scanner.getCurrentSymbol() == SymbolTable.ST_NOT_SYMBOL)
+		{
+			notFlag = true;
+			scanner.getNextSymbol();
+		}		
+		
+		currentSymbol = scanner.getCurrentSymbol();
+		
+		if (currentSymbol == SymbolTable.ST_TRUE_SYMBOL)
+		{
+			scanner.getNextSymbol();
+			return symbolTable.getSymbolNodeLink(currentSymbol);
+		}
+		else if (currentSymbol == SymbolTable.ST_FALSE_SYMBOL)
+		{
+			scanner.getNextSymbol();
+			return symbolTable.getSymbolNodeLink(currentSymbol);
+		}
+		else if ( (identifier = isIdentifier()).isValid() )
+		{
+			if (notFlag)
+			{
+				notPrefixNode = new MonadicOpNode(notSymbolLine, notSymbolColumn, identifier, SymbolTable.ST_NOT_SYMBOL);
+				identifier = notPrefixNode;
+				notFlag = false;
+			}
+			
+			return identifier;
+		}
+		else if ( (leftIntExpression = isIntExpression()).isValid()  )
+		{
+			line = scanner.getCurrentLine();
+			column = scanner.getCurrentColumn();
+			currentSymbol = scanner.getCurrentSymbol();
+			
+			if (isRelationOpSymbol(currentSymbol))
+			{
+				scanner.getNextSymbol();
+				
+				rightIntExpression = isIntExpression();
+				if (rightIntExpression.isValid())
+				{
+					boolFactor = new DyadicOpNode(line, column, leftIntExpression, rightIntExpression, currentSymbol);
+				
+					if (notFlag)
+					{
+						notPrefixNode = new MonadicOpNode(notSymbolLine, notSymbolColumn, boolFactor, SymbolTable.ST_NOT_SYMBOL);
+						boolFactor = notPrefixNode;
+						notFlag = false;
+					}
+					
+					return boolFactor;
+				
+				}
+				else	// no intExpr after relationOp
+				{
+					return expectedSymbolError("intExpr expected after relationOp");
+				}
+				
+			}
+			else	// no relationOp after intExpr
+			{
+				return expectedSymbolError("'relationOp' expected after intExpr");
+			}
+			
+		}
+		else if (currentSymbol == SymbolTable.ST_OPEN_PARENTHESIS_SYMBOL)
+		{
+			boolFactor = isBoolExpression();
+			
+			if (boolFactor.isValid())
+			{
+				if (scanner.getCurrentSymbol() == SymbolTable.ST_CLOSE_PARENTHESIS_SYMBOL)
+				{
+					scanner.getNextSymbol();
+					
+					if (notFlag)
+					{
+						notPrefixNode = new MonadicOpNode(notSymbolLine, notSymbolColumn, boolFactor, SymbolTable.ST_NOT_SYMBOL);
+						boolFactor = notPrefixNode;
+						notFlag = false;
+					}					
+					
+					return boolFactor;
+					
+				}
+				else	// no ) after (
+				{
+					return expectedSymbolError("')' expeted after '(' boolExpr");
+				}
+			}
+			else	// no boolFactor after (
+			{
+				return expectedSymbolError("boolFactor expected after '('");
+			}
+			
+		}
+		
+		if (notFlag)
+		{
+			return expectedSymbolError("either intExpr relationOp intExpr or ( boolExpr ) expected after 'NOT'");
+		}
+		
+		// no boolFactor rule hit
+		
+		return nullNode;
+	}
+	
+	/**
+	 * boolExpr = [ NOT_SYMBOL ] boolTerm { OR_SYMBOL [ NOT_SYMBOL ] boolTerm }.
+	 */
+	private SyntaxtreeNode isBoolExpression() throws IOException
+	{
+		boolean notFlag = false;
+		SyntaxtreeNode leftTerm = nullNode, notPrefixNode, rightTerm = nullNode, newTerm;
+		long notSymbolLine, notSymbolColumn;
+		long line, column;
+		int currentSymbol;
+		
+		notSymbolLine = scanner.getCurrentLine();
+		notSymbolColumn = scanner.getCurrentColumn();
+		
+		if (scanner.getCurrentSymbol() == SymbolTable.ST_NOT_SYMBOL)
+		{
+			notFlag = true;
+			scanner.getNextSymbol();
+		}
+		
+		leftTerm = isBoolTerm();
+		if (!leftTerm.isValid())
+		{
+			if (notFlag)
+			{
+				return expectedSymbolError("boolTerm expected after 'NOT'");
+			}
+			else
+			{
+				return nullNode;
+			}
+		}
+		
+		if (notFlag)
+		{
+			notPrefixNode = new MonadicOpNode(notSymbolLine, notSymbolColumn, leftTerm, SymbolTable.ST_NOT_SYMBOL);
+			leftTerm = notPrefixNode;
+			notFlag = false;
+		}
+		
+		currentSymbol = scanner.getCurrentSymbol();
+		
+		while (currentSymbol == SymbolTable.ST_OR_SYMBOL)
+		{
+			line = scanner.getCurrentLine();
+			column = scanner.getCurrentColumn();
+			
+			scanner.getNextSymbol();
+		
+			notSymbolLine = scanner.getCurrentLine();
+			notSymbolColumn = scanner.getCurrentColumn();
+			
+			if (scanner.getCurrentSymbol() == SymbolTable.ST_NOT_SYMBOL)
+			{
+				notFlag = true;
+				scanner.getNextSymbol();
+			}
+			
+			rightTerm = isBoolTerm();
+			
+			if (rightTerm.isValid())
+			{
+				if (notFlag)
+				{
+					notPrefixNode = new MonadicOpNode(notSymbolLine, notSymbolColumn, rightTerm, SymbolTable.ST_NOT_SYMBOL);
+					rightTerm = notPrefixNode;
+					notFlag = false;
+				}
+				
+				newTerm = new DyadicOpNode(line, column, leftTerm, rightTerm, currentSymbol);
+				leftTerm = newTerm;
+				
+				currentSymbol = scanner.getCurrentSymbol();
+				
+			}
+			else
+			{
+				if (notFlag)
+				{
+					return expectedSymbolError("boolTerm expected after 'NOT'");
+				}
+				else
+				{
+					return expectedSymbolError("boolTerm expected after 'OR'");
+				}
+			}
+			
+		}
+		
+		return leftTerm;
+	}
+	
 	/***
 	* boolExpr = intExpr relationOp intExpr { boolOp intExpr relationOp intExpr }.
 	 * @throws IOException 
 	**/
-	private SyntaxtreeNode isBoolExpression() throws IOException
+	@SuppressWarnings("unused")
+	private SyntaxtreeNode isBoolExpression____Original_____() throws IOException
 	{
 		
 		SyntaxtreeNode leftIntExpression, rightIntExpression;
@@ -692,6 +969,8 @@ public class Parser
 			
 			if (isRelationOpSymbol(currentSymbol))
 			{
+				scanner.getNextSymbol();
+				
 				rightIntExpression = isIntExpression();
 				if (rightIntExpression.isValid())
 				{
@@ -770,7 +1049,7 @@ public class Parser
 		return scanner.getCurrentSymbol() == SymbolTable.ST_EOF_SYMBOL;
 	}
 	
-	private SyntaxtreeNode expectedSymbolError(String message)
+	private SyntaxtreeNode expectedSymbolError(String message) throws IOException
 	{
 		long line = scanner.getCurrentLine();
 		long column = scanner.getCurrentColumn();
@@ -810,13 +1089,11 @@ public class Parser
 	{
 		SyntaxtreeNode rootNode;
 		
-		Listing.write("");
-		
 		rootNode = isProgram();
 		
 		if (DEBUG_PARSER)
 		{
-			symbolTable.dumpSymbolTable();		
+			//symbolTable.dumpSymbolTable();		
 		}
 		
 		if (rootNode.isValid())
@@ -841,13 +1118,16 @@ public class Parser
 		return true;
 	}
 	
-	private void generalSyntaxError(long line, long column, String message)
+	private void generalSyntaxError(long line, long column, String message) throws IOException
 	{
-		
+		Listing.writeLine("SYNTAX ERROR near line " + line + ", column " + column + ": " + message);
 	}
 	
-	private void syntaxErrorUnexpectedEOF()
+	private void syntaxErrorUnexpectedEOF() throws IOException
 	{
+		long line = scanner.getCurrentLine();
+		long column = scanner.getCurrentColumn();
 		
+		generalSyntaxError(line, column, "Unexpected EOF");
 	}
 }
