@@ -4,6 +4,8 @@ import ptc.nase.SymbolTable;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.File;
+import java.io.PrintStream;
 import ptc.nase.Nase;
 
 %% // -------------------------------------------------------------------------------------
@@ -14,6 +16,7 @@ import ptc.nase.Nase;
 %line
 %column
 %type int
+%ignorecase
 
 %public
 %final
@@ -31,20 +34,29 @@ import ptc.nase.Nase;
 	public JFlexNaseScanner(String filename) throws FileNotFoundException
 	{
 		this(new FileReader(filename + Nase.IN_FILE_EXTENSION));
+		
+		// Open echo file listing
+		echoFile = new PrintStream( new File(filename + Nase.ECHO_FILE_EXTENSION));
+		
+		echoWriteString("Compilation listing of <" + filename + Nase.IN_FILE_EXTENSION + ">\r\n");
+		echoWriteLineNr(1);
+		
 		Listing.init(filename);
 	}
 
 	private SymbolTable symbolTable;
 	private int currentSymbol;
 
+	private PrintStream echoFile;
+
 	public long getCurrentLine()
 	{
-		return yycolumn + 1;
+		return yyline + 1;
 	}
 	
 	public long getCurrentColumn()
 	{
-		return yyline + 1;
+		return yycolumn + 1;
 	}
 	
 	public SymbolTable getSymbolTable()
@@ -55,19 +67,41 @@ import ptc.nase.Nase;
 	public boolean getNextSymbol() throws IOException
 	{
 		currentSymbol = yylex();
+		
+		echoWriteString(yytext());
 			
 		return true;
 	}
 	
-	public void skipToDelimiter()
+	public void skipToDelimiter() throws IOException
 	{
-		//TODO
-		System.out.println("TODO: skipToDelimiter");
+		boolean delimiterFound = false;
+		
+		while (!delimiterFound )
+		{
+			getNextSymbol();
+			delimiterFound = ( (currentSymbol == SymbolTable.ST_DELIMITER_SYMBOL) || (currentSymbol == SymbolTable.ST_EOF_SYMBOL) );
+		}
 	}
 	
 	public int getCurrentSymbol()
 	{
 		return currentSymbol;
+	}
+
+	public void echoWriteLineNr(long lineNr)
+	{
+		echoFile.printf("\r\n%05d: ", lineNr);
+	}
+	
+	public void echoWriteString(String line)
+	{
+		echoFile.printf("%s", line);
+	}
+	
+	public void echoWriteChar(char c)
+	{
+		echoFile.printf("%c", c);
 	}
 
 %}
@@ -102,10 +136,19 @@ GT_SYMBOL					= ">"
 READ_SYMBOL					= "READ"
 WRITE_SYMBOL				= "WRITE"
 
+BOOL_TYPE_SYMBOL			= "BOOLEAN"
+TRUE_SYMBOL					= "TRUE"
+FALSE_SYMBOL				= "FALSE"
+NOT_SYMBOL					= "NOT"
+
 LINE_TERMINATOR 			= \r|\n|\r\n
 WHITESPACE 					= [" ""\t"]+
 
 IDENTIFIER					= [A-Za-z][A-Za-z0-9]*
+
+INTEGER						= [1-9][0-9]*
+
+COMMENT = "$".*{LINE_TERMINATOR}
 
 %% // -------------------------------------------------------------------------------------
 
@@ -137,6 +180,12 @@ IDENTIFIER					= [A-Za-z][A-Za-z0-9]*
 {READ_SYMBOL}				{ return SymbolTable.ST_READ_SYMBOL; }
 {WRITE_SYMBOL}				{ return SymbolTable.ST_WRITE_SYMBOL; }
 
+
+{BOOL_TYPE_SYMBOL}			{ return SymbolTable.ST_BOOL_TYPE_SYMBOL; }
+{TRUE_SYMBOL}				{ return SymbolTable.ST_TRUE_SYMBOL; }
+{FALSE_SYMBOL}				{ return SymbolTable.ST_FALSE_SYMBOL; }
+{NOT_SYMBOL}				{ return SymbolTable.ST_NOT_SYMBOL; }
+
 {IDENTIFIER}				{
 
 								int symbol = symbolTable.classifySymbol(yytext());
@@ -148,8 +197,20 @@ IDENTIFIER					= [A-Za-z][A-Za-z0-9]*
 								return symbol;	
 							}
 
-{LINE_TERMINATOR}			{  }
-{WHITESPACE}				{  }
+{INTEGER}					{
 
-.	{ }
+								int symbol = symbolTable.classifySymbol(yytext());
+								if (symbol == SymbolTable.ST_NULL_SYMBOL)
+								{
+									symbol = symbolTable.insertUserSymbol(yytext());
+								}
+								
+								return symbol;	
+							}
 
+{LINE_TERMINATOR}			{ echoWriteLineNr(yyline + 2); }
+{WHITESPACE}				{ echoWriteString(yytext()); }
+
+{COMMENT}					{  }
+
+. {}

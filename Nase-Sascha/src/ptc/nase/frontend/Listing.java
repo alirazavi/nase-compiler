@@ -22,21 +22,23 @@ public class Listing
 			listFile.printf("%c", c);
 	}
 	
-	public static void write(String line) throws IOException
+	public static void writeLine(String line) throws IOException
 	{
+		System.out.printf("%s\r\n", line);
 		if (listFile != null)
 			listFile.printf("%s\r\n", line);
 	}
 	
 	public static void writeInternalError(String line) throws IOException
 	{
+		System.out.printf("[INTERNAL ERROR]\t%s\r\n", line);
 		if (listFile != null)
 			listFile.printf("[INTERNAL ERROR]\t%s\r\n", line);
 	}
 	
 	public static void writeGeneralContextError(long line, long column, String message) throws IOException
 	{
-		Listing.write("CONTEXT ERROR near line " + line + ", column " + column + ": " + message);
+		Listing.writeLine("CONTEXT ERROR near line " + line + ", column " + column + ": " + message);
 	}
 	
 }

@@ -19,7 +19,7 @@ public class SyntaxtreeView extends JFrame
 	private mxGraph graph;
 	private Object parent;
 	
-	private final int height = 50;
+	private final int height = 70;
 	private final int width = 120;
 	private final int padding = 40;
 	private final int paddingX = 150;
@@ -109,7 +109,7 @@ public class SyntaxtreeView extends JFrame
 		//graph.setCellsLocked(true);
 		
 		graph.getModel().beginUpdate();
-		drawNode(syntaxtree.getRoot(), parent, 300, 20, 1);
+		drawNode(syntaxtree.getRoot(), parent, 400, 20, 1);
 		graph.getModel().endUpdate();
 		
 		mxGraphComponent graphComponent = new mxGraphComponent(graph);
