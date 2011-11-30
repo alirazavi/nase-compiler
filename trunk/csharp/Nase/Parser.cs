@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Nase.Syntax;
+using Nase.GeneratedParser;
+using Nase.Files;
 
 namespace Nase
 {
@@ -10,13 +12,11 @@ namespace Nase
     {
         static readonly Logger Logger = LogManager.CreateLogger();
 
-        FileManager _fileManager;
         SymbolTable _symbolTable;
         IScanner _scanner;
 
-        public Parser(FileManager fileManager, SymbolTable symbolTable, IScanner scanner)
+        public Parser(SymbolTable symbolTable, IScanner scanner)
         {
-            this._fileManager = fileManager;
             this._symbolTable = symbolTable;
             this._scanner = scanner;
         }
@@ -28,15 +28,12 @@ namespace Nase
             SyntaxTreeNode rootNode = IsProgramm();
             syntaxTree = new SyntaxTree(rootNode);
 
-            Logger.Debug(this._symbolTable.DumpSymbolTable());
-            Logger.Debug(syntaxTree.DumpTreeTable());
-
             return rootNode != null;
         }
 
         FilePosition GetInputFilePosition()
         {
-            return this._fileManager.Input.InputFilePosition;
+            return this._scanner.InputFilePosition;
         }
 
         /*
@@ -62,13 +59,14 @@ namespace Nase
          */
         SyntaxTreeNode IsStatementSequence()
         {
-            SyntaxTreeNode statementSequenceNode = null;
+            SyntaxTreeSequenceNode statementSequenceNode = null;
             SyntaxTreeNode statementNode;
 
             FilePosition position = GetInputFilePosition();
             if (null != (statementNode = IsStatement()))
             {
                 statementSequenceNode = new SyntaxTreeSequenceNode(position, statementNode, statementSequenceNode);
+                statementSequenceNode.AppendToLast();
             }
 
             SyntaxTreeNode firstStatementNode = statementSequenceNode;
@@ -77,6 +75,7 @@ namespace Nase
             {
                 position = GetInputFilePosition();
                 statementSequenceNode = new SyntaxTreeSequenceNode(position, statementNode, statementSequenceNode);
+                statementSequenceNode.AppendToLast();
             }
             return firstStatementNode;
         }
@@ -115,7 +114,7 @@ namespace Nase
         {
             bool commaOccurred = false;
             SyntaxTreeNode firstDeclSequeceNode = null;
-            SyntaxTreeNode declSequenceNode = null;
+            SyntaxTreeSequenceNode declSequenceNode = null;
             SyntaxTreeNode declNode = null;
             SyntaxTreeNode typeNode;
 
@@ -144,6 +143,7 @@ namespace Nase
                     {
                         position = GetInputFilePosition();
                         declSequenceNode = new SyntaxTreeSequenceNode(position, declNode, declSequenceNode);
+                        declSequenceNode.AppendToLast();
                         if (!commaOccurred)
                         {
                             commaOccurred = true;
@@ -159,6 +159,7 @@ namespace Nase
                     {
                         position = GetInputFilePosition();
                         declSequenceNode = new SyntaxTreeSequenceNode(position, declNode, declSequenceNode);
+                        declSequenceNode.AppendToLast();
                         if (!commaOccurred)
                         {
                             firstDeclSequeceNode = declSequenceNode;
@@ -367,7 +368,7 @@ namespace Nase
             {
                 return intFactorNode;
             }
-            else if (this._scanner.PeekSymbol() == Symbol.OPEN_PARAENTHESIS_SYMBOL)
+            else if (this._scanner.PeekSymbol() == Symbol.OPEN_PARENTHESIS_SYMBOL)
             {
                 this._scanner.NextSymbol();
                 Symbol currentSymbol = this._scanner.PeekSymbol();
@@ -561,7 +562,7 @@ namespace Nase
         void SyntaxError(string message)
         {
             FilePosition position = GetInputFilePosition(); ;
-            Logger.Error("Syntax Error near line " + position.Line + ", column " + position.Column + ": " + message);
+            Logger.Error("Syntax Error near line " + position.StartLine + ", column " + position.StartColumn + ": " + message);
         }
 
         SyntaxTreeNode CreateErrorNode(string message, bool skipToDelimiter = true)
@@ -570,6 +571,7 @@ namespace Nase
             FilePosition position = GetInputFilePosition();
             if(skipToDelimiter)
                 this._scanner.SkipToDelimiter();
+            this._scanner.NextSymbol();
             return new SyntaxTreeErrorNode(position);
         }
     }

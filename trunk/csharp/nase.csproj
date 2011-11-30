@@ -14,6 +14,7 @@
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseHostCompilerIfAvailable>False</UseHostCompilerIfAvailable>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -62,11 +63,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Nase\FileManager.cs">
+    <Compile Include="Files\FileManager.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Files\FilePosition.cs" />
+    <Compile Include="Nase\GeneratedParser\NaseParser.cs" />
+    <Compile Include="Nase\GeneratedParser\ParserDefinitions.cs" />
     <Compile Include="Nase\GeneratedScannerWrapper.cs" />
-    <Compile Include="Nase\InputFile.cs">
+    <Compile Include="Files\InputFile.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Nase\CodeGeneratorHelper.cs" />
@@ -74,7 +78,7 @@
     <Compile Include="Nase\Macro.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Nase\OutputFile.cs">
+    <Compile Include="Files\OutputFile.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Nase\Parser.cs">
@@ -89,6 +93,7 @@
     <Compile Include="Nase\GeneratedScanner\NaseScanner.cs" />
     <Compile Include="Nase\GeneratedScanner\ScannerDefinitions.cs" />
     <Compile Include="Nase\SymbolTable.cs" />
+    <Compile Include="Nase\Syntax\ITypedExpression.cs" />
     <Compile Include="Nase\Syntax\SyntaxTree.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -165,23 +170,24 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="mmix.exe">
+    <Content Include="tools\mmix.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="mmixal.exe">
+    <Content Include="tools\mmixal.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Nase\GeneratedParser\NaseParser.y" />
     <None Include="Nase\GeneratedScanner\NaseScanner.lex" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="tools\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>cd $(ProjectDir)\Nase\GeneratedScanner
 $(ProjectDir)\tools\gplex.exe NaseScanner.lex
+cd $(ProjectDir)\Nase\GeneratedParser
+$(ProjectDir)\tools\gppg.exe NaseParser.y
 </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

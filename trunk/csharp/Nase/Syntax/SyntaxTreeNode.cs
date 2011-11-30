@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Nase.Files;
 
 namespace Nase.Syntax
 {
@@ -33,9 +34,9 @@ namespace Nase.Syntax
             {
                 b.Append(" . ");
             }
-            b.Append(this._position.Line);
+            b.Append(this._position.StartLine);
             b.Append(":");
-            b.Append(this._position.Column);
+            b.Append(this._position.StartColumn);
             b.Append(" ");
             b.Append(this.GetType().Name);
             b.Append("\n");
@@ -55,7 +56,7 @@ namespace Nase.Syntax
 
         string PositionAsString()
         {
-            return String.Format("line {0}, column {1}", this._position.Line, this._position.Column);
+            return String.Format("line {0}, column {1}", this._position.StartLine, this._position.StartColumn);
         }
 
         internal bool RunDelegateForType(System.Type type, SyntaxTree.TreeNodeDelegate delegateToRun)
@@ -75,7 +76,7 @@ namespace Nase.Syntax
 
         protected void AppendNodeComment(FileManager fileManager)
         {
-            fileManager.Output.AppendLine("% POSITION {0}/{1}: begin coding of {2}", this._position.Line, this._position.Column, this.GetType().Name);
+            fileManager.Output.AppendLine("% POSITION {0}/{1}: begin coding of {2}", this._position.StartLine, this._position.StartColumn, this.GetType().Name);
         }
     }
 }

@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Nase.Syntax;
+using Nase.GeneratedScanner;
+using Nase.GeneratedParser;
+using Nase.Files;
 
 namespace Nase
 {
@@ -48,10 +51,36 @@ namespace Nase
 
         static bool RunPhase_1(FileManager fileManager, SymbolTable symbolTable, out SyntaxTree syntaxTree)
         {
-            IScanner scanner = new GeneratedScannerWrapper(fileManager, symbolTable);
-            Parser parser = new Parser(fileManager, symbolTable, scanner);
+            if (false)
+            {
+                IScanner scanner = new GeneratedScannerWrapper(fileManager, symbolTable);
+                //IScanner scanner = new Scanner(fileManager, symbolTable);
+                Parser parser = new Parser(symbolTable, scanner);
 
-            return parser.ParseProgramm(out syntaxTree);
+                bool result = parser.ParseProgramm(out syntaxTree);
+
+                Logger.Debug(symbolTable.DumpSymbolTable());
+                Logger.Debug(syntaxTree.DumpTreeTable());
+
+                return result;
+            }
+            else
+            {
+                NaseScanner scanner = new NaseScanner(fileManager.Input);
+                scanner.SymbolTable = symbolTable;
+                NaseParser parser = new NaseParser(scanner, symbolTable);
+                bool result = parser.Parse();
+
+                syntaxTree = parser.SyntaxTree;
+
+                if (result)
+                {
+                    Logger.Debug(symbolTable.DumpSymbolTable());
+                    Logger.Debug(syntaxTree.DumpTreeTable());
+                }
+
+                return result;
+            }
         }
 
         static bool RunPhase_2(SyntaxTree syntaxTree, SymbolTable symbolTable, CodeGeneratorHelper storage)

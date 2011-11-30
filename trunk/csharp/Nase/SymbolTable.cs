@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Nase.Syntax;
+using Nase.GeneratedParser;
+using Nase.Files;
 
 namespace Nase
 {
@@ -10,9 +12,11 @@ namespace Nase
     {
         ReservedWordSymbolType,
         IdentifierSymbolType,
-        NumberSymbolType
+        NumberSymbolType,
+        BooleanSymbolType
     }
 
+    /*
     public enum Symbol
     {
         NULL_SYMBOL = 0,
@@ -45,6 +49,7 @@ namespace Nase
         READ_SYMBOL,                 // 27
         WRITE_SYMBOL,                // 28
     }
+     */
 
     public class SymbolTable
     {
@@ -70,33 +75,47 @@ namespace Nase
 
             AddFixSymbol("", false);
             AddFixSymbol(InputFile.EOF_CHAR.ToString(), true);
-            AddFixSymbol(";", true);
+            this._usedEntries += 2;
+
             AddFixSymbol("BEGIN", false);
             AddFixSymbol("END", false);
-            AddFixSymbol("INTEGER", false);
+            AddFixSymbol(";", true);
             AddFixSymbol(",", true);
+            AddFixSymbol("INTEGER", false);
+            AddFixSymbol("BOOLEAN", false);
+            AddFixSymbol("READ", false);
+            AddFixSymbol("WRITE", false);
             AddFixSymbol(":=", true);
-            AddFixSymbol("-", true);
-            AddFixSymbol("+", true);
-            AddFixSymbol("*", true);
-            AddFixSymbol("/", true);
-            AddFixSymbol("%", true);
-            AddFixSymbol("OR", false);
-            AddFixSymbol("AND", false);
             AddFixSymbol("(", true);
             AddFixSymbol(")", true);
             AddFixSymbol("IIF", false);
             AddFixSymbol("FII", false);
             AddFixSymbol("?", true);
             AddFixSymbol(":", true);
+            AddFixSymbol("+", true);
+            AddFixSymbol("-", true);
+            AddFixSymbol("*", true);
+            AddFixSymbol("/", true);
+            AddFixSymbol("%", true);
             AddFixSymbol("<", true);
             AddFixSymbol("<=", true);
             AddFixSymbol("=", true);
             AddFixSymbol(">=", true);
             AddFixSymbol(">", true);
             AddFixSymbol("<>", true);
-            AddFixSymbol("READ", false);
-            AddFixSymbol("WRITE", false);
+            AddFixSymbol("AND", false);
+            AddFixSymbol("OR", false);
+            AddFixSymbol("NOT", false);
+
+            AddFixSymbol("TRUE", false);
+            this._symbolTable[this._usedEntries - 1].type = SymbolType.BooleanSymbolType;
+            this._symbolTable[this._usedEntries - 1].iYielding = -1;
+
+            AddFixSymbol("FALSE", false);
+            this._symbolTable[this._usedEntries - 1].type = SymbolType.BooleanSymbolType;
+            this._symbolTable[this._usedEntries - 1].iYielding = 0;
+
+            this._usedEntries = 100;
         }
 
         public string GetSpecialCharList()
@@ -157,9 +176,9 @@ namespace Nase
                 Logger.Fatal("Invalid symbol table index");
                 throw new IndexOutOfRangeException();
             }
-            if (!IsNumberSymbol(symbol))
+            if (!IsNumberSymbol(symbol) && !IsBooleanSymbol(symbol))
             {
-                Logger.Warn("Trying to get a numeric value from not a numeric symbol");
+                Logger.Warn("Trying to get a numeric value from not a numeric or boolean symbol");
             }
             return this._symbolTable[(int)symbol].iYielding;
         }
@@ -182,6 +201,16 @@ namespace Nase
                 throw new IndexOutOfRangeException();
             }
             return this._symbolTable[(int)symbol].type == SymbolType.NumberSymbolType;
+        }
+
+        public bool IsBooleanSymbol(Symbol symbol)
+        {
+            if ((int)symbol >= this._usedEntries)
+            {
+                Logger.Fatal("Invalid symbol table index");
+                throw new IndexOutOfRangeException();
+            }
+            return this._symbolTable[(int)symbol].type == SymbolType.BooleanSymbolType;
         }
 
         public string GetRepresentationOfSymbol(Symbol symbol)
@@ -240,16 +269,20 @@ namespace Nase
                     case SymbolType.NumberSymbolType:
                         buffer.AppendFormat("{0,-12}", "Number");
                         break;
+                    case SymbolType.BooleanSymbolType:
+                        buffer.AppendFormat("{0,-12}", "Boolean");
+                        break;
                 }
 
-                buffer.Append("NodeLink:");
+                buffer.Append("NodeLink: ");
                 if (this._symbolTable[i].nodeLink != null)
                 {
-                    buffer.AppendLine();
-                    this._symbolTable[i].nodeLink.AsString(buffer, 3);
+                    buffer.AppendFormat("{0, -25}", this._symbolTable[i].nodeLink.GetType().Name);
                 }
                 else
-                    buffer.Append("null");
+                {
+                    buffer.AppendFormat("{0, -25}", "null");
+                }
                 buffer.AppendFormat(" -- {0}", this._symbolTable[i].sRepresentation);
                 buffer.AppendLine();
             }
@@ -272,7 +305,7 @@ namespace Nase
 
         Symbol AddSymbol(SymbolTableEntry entry)
         {
-            if (this._usedEntries == this._symbolTable.Length)
+            if (this._usedEntries >= this._symbolTable.Length)
             {
                 SymbolTableEntry[] newTable = new SymbolTableEntry[this._symbolTable.Length * 2];
                 Array.Copy(this._symbolTable, newTable, this._symbolTable.Length);
@@ -281,6 +314,5 @@ namespace Nase
             this._symbolTable[this._usedEntries] = entry;
             return (Symbol)this._usedEntries++;
         }
-
     }
 }

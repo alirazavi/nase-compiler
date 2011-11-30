@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Nase.GeneratedParser;
+using Nase.Files;
 
 namespace Nase.Syntax
 {

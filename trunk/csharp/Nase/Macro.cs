@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Nase.GeneratedParser;
 
 namespace Nase
 {
@@ -182,6 +183,9 @@ namespace Nase
             {
                 case Symbol.MINUS_SYMBOL:
                     b.AppendLine("          NEG ACCU,0,ACCU %ACCU := -ACCU");
+                    break;
+                case Symbol.NOT_SYMBOL:
+                    b.AppendLine("          NAND ACCU,ACCU,ACCU %ACCU := NOT( ACCU )");
                     break;
                 default:
                     throw new Exception("Unknown opcode as MonadicOperator");

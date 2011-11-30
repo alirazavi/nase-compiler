@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Nase.GeneratedParser;
+using Nase.Files;
 
 namespace Nase.Syntax
 {
@@ -21,9 +23,9 @@ namespace Nase.Syntax
             {
                 b.Append(" . ");
             }
-            b.Append(this._position.Line);
+            b.Append(this._position.StartLine);
             b.Append(":");
-            b.Append(this._position.Column);
+            b.Append(this._position.StartColumn);
             b.Append(" ");
             b.Append(this.GetType().Name);
             b.Append("( Symbol = "); b.Append(this.Identifier); b.Append(" )");
@@ -31,7 +33,8 @@ namespace Nase.Syntax
 
             foreach (var node in this._children)
             {
-                node.AsString(b, level + 1);
+                if (node != null)
+                    node.AsString(b, level + 1);
             }
         }
 
