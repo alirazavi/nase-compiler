@@ -7,7 +7,7 @@ using Nase.Files;
 
 namespace Nase.Syntax
 {
-    class SyntaxTreeDyadicOpNode :SyntaxTreeNode
+    class SyntaxTreeDyadicOpNode : SyntaxTreeNode, ITypedExpression
     {
         static readonly Logger Logger = LogManager.CreateLogger();
 
@@ -64,6 +64,23 @@ namespace Nase.Syntax
                 && this._children[1].CheckForIntegrity();
         }
 
+        public override bool CheckForTypeMismatch(SymbolTable symbolTable)
+        {
+            if (base.CheckForTypeMismatch(symbolTable))
+            {
+                var leftOp = this._children[0] as ITypedExpression;
+                var rightOp = this._children[1] as ITypedExpression;
+                if (leftOp != null &&
+                    rightOp != null &&
+                    leftOp.GetExpressionType() == this.GetExpressionType() &&
+                    rightOp.GetExpressionType() == this.GetExpressionType())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper codeGeneratorHelper)
         {
             AppendNodeComment(fileManager);
@@ -77,6 +94,32 @@ namespace Nase.Syntax
 
             fileManager.Output.Append(Macro.DyadicOperator(this._opCodeSymbol, tempMemoryAddress));
             codeGeneratorHelper.PopVariableAddress();
+        }
+
+        public ExpressionType GetExpressionType()
+        {
+            switch (this._opCodeSymbol)
+            {
+                case Symbol.PLUS_SYMBOL:
+                case Symbol.MINUS_SYMBOL:
+                case Symbol.TIMES_SYMBOL:
+                case Symbol.DIVIDE_SYMBOL:
+                case Symbol.MODULO_SYMBOL:
+                    return ExpressionType.Integer;
+
+                case Symbol.AND_SYMBOL:
+                case Symbol.OR_SYMBOL:
+                case Symbol.EQ_SYMBOL:
+                case Symbol.NE_SYMBOL:
+                case Symbol.LT_SYMBOL:
+                case Symbol.LE_SYMBOL:
+                case Symbol.GT_SYMBOL:
+                case Symbol.GE_SYMBOL:
+                    return ExpressionType.Boolean;
+
+                default:
+                    throw new Exception("Unknown opcode symbol.");
+            }
         }
     }
 }

@@ -5,7 +5,8 @@ using System.Text;
 
 namespace Nase.Syntax
 {
-    public enum ExpressionType {
+    public enum ExpressionType
+    {
         Integer,
         Boolean
     }
@@ -13,6 +14,5 @@ namespace Nase.Syntax
     public interface ITypedExpression
     {
         ExpressionType GetExpressionType();
-        bool CheckTypeMismatch();
     }
 }

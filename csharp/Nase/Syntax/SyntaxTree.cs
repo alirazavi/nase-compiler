@@ -38,7 +38,7 @@ namespace Nase.Syntax
                 !CheckForErrorNodes() ||
                 !CheckForUndeclaredIdentifiers(symbolTable) ||
                 !CheckForDuplicateDeclarations(symbolTable) ||
-                !CheckForTypeMismatch(symbolTable))
+                false )//!this._rootNode.CheckForTypeMismatch(symbolTable))
             {
                 return false;
             }
@@ -121,15 +121,6 @@ namespace Nase.Syntax
             {
                 Logger.Error(node.ContextErrorString("Program contains at least one syntactic error."));
                 return false;
-            });
-        }
-
-        bool CheckForTypeMismatch(SymbolTable symbolTable)
-        {
-            return this._rootNode.RunDelegateForType(typeof(ITypedExpression), delegate(SyntaxTreeNode node)
-            {
-                Logger.Debug("ITypedExpression found.");
-                return true;
             });
         }
     }
