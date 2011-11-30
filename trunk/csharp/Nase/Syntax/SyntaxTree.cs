@@ -38,11 +38,11 @@ namespace Nase.Syntax
                 !CheckForErrorNodes() ||
                 !CheckForUndeclaredIdentifiers(symbolTable) ||
                 !CheckForDuplicateDeclarations(symbolTable) ||
-                false )//!this._rootNode.CheckForTypeMismatch(symbolTable))
+                !this._rootNode.CheckForTypeMismatch())
             {
+                Logger.Error("...failed!");
                 return false;
             }
-
             return true;
         }
 
@@ -88,6 +88,7 @@ namespace Nase.Syntax
                     Logger.Error(message);
                     return false;
                 }
+                identNode.DeclarationNode = symbolTable.GetDeclarationNodeLinkToSymbol(symbol);
                 return true;
             });
         }

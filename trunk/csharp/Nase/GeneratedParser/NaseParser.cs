@@ -3,10 +3,10 @@
 // (see accompanying GPPGcopyright.rtf)
 
 // GPPG version 1.4.5
-// Machine:  DARKONE-L
-// DateTime: 30.11.2011 13:16:59
-// UserName: darkone
-// Input file <NaseParser.y - 30.11.2011 13:06:51>
+// Machine:  VM-ID0050B
+// DateTime: 30.11.2011 17:28:27
+// UserName: ib
+// Input file <NaseParser.y - 30.11.2011 13:44:56>
 
 // options: lines
 

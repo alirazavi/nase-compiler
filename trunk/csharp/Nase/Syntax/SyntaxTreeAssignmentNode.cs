@@ -42,9 +42,9 @@ namespace Nase.Syntax
                 && this._children[1].CheckForIntegrity();
         }
 
-        public override bool CheckForTypeMismatch(SymbolTable symbolTable)
+        public override bool CheckForTypeMismatch()
         {
-            if (base.CheckForTypeMismatch(symbolTable))
+            if (base.CheckForTypeMismatch())
             {
                 var leftNode = this._children[0] as ITypedExpression;
                 var rightNode = this._children[1] as ITypedExpression;

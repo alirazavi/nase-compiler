@@ -19,11 +19,6 @@ namespace Nase.Syntax
             this.ConstSymbol = symbol;
         }
 
-        public override bool CheckForTypeMismatch(SymbolTable symbolTable)
-        {
-            return true;
-        }
-
         public ExpressionType GetExpressionType()
         {
             if (this.ConstSymbol == Symbol.TRUE_SYMBOL ||
