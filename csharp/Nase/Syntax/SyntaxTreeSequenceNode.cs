@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Nase.Files;
 
 namespace Nase.Syntax
 {
@@ -13,8 +14,8 @@ namespace Nase.Syntax
             : base(position)
         {
             this._children.Add(statementNode);
-            this._children.Add(null);
-
+            this._children.Add(prevSequenceNode);
+            /*
             if (null != prevSequenceNode && prevSequenceNode is SyntaxTreeSequenceNode)
             {
                 SyntaxTreeSequenceNode curNode = (SyntaxTreeSequenceNode)prevSequenceNode;
@@ -23,7 +24,21 @@ namespace Nase.Syntax
                     curNode = (SyntaxTreeSequenceNode)curNode._children[1];
                 }
                 curNode._children[1] = this;
+            }*/
+        }
+
+        public void AppendToLast()
+        {
+            if (null != this._children[1] && this._children[1] is SyntaxTreeSequenceNode)
+            {
+                SyntaxTreeSequenceNode curNode = (SyntaxTreeSequenceNode)this._children[1];
+                while (curNode._children[1] != null)
+                {
+                    curNode = (SyntaxTreeSequenceNode)curNode._children[1];
+                }
+                curNode._children[1] = this;
             }
+            this._children[1] = null;
         }
 
         public override bool CheckForIntegrity()

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Nase.GeneratedParser;
+using Nase.Files;
 
 namespace Nase
 {
@@ -10,6 +12,6 @@ namespace Nase
         Symbol NextSymbol();
         Symbol PeekSymbol();
         void SkipToDelimiter();
-        void ScannerTest();
+        FilePosition InputFilePosition { get; }
     }
 }

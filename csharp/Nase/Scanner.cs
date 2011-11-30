@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Nase.GeneratedParser;
+using Nase.Files;
 
 namespace Nase
 {
@@ -30,6 +32,11 @@ namespace Nase
             this._symbolTable = symbolTable;
             this._specialChars = this._symbolTable.GetSpecialCharList();
             this._peekSymbol = AdvanceSymbol();
+        }
+
+        public FilePosition InputFilePosition
+        {
+            get { return this._fileManager.Input.InputFilePosition; }
         }
 
         public Symbol NextSymbol()

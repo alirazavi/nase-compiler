@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Nase.GeneratedParser;
+using Nase.Files;
 
 namespace Nase.Syntax
 {
-    class SyntaxTree
+    public class SyntaxTree
     {
         static readonly Logger Logger = LogManager.CreateLogger();
 
@@ -35,7 +37,8 @@ namespace Nase.Syntax
             if (!this._rootNode.CheckForIntegrity() ||
                 !CheckForErrorNodes() ||
                 !CheckForUndeclaredIdentifiers(symbolTable) ||
-                !CheckForDuplicateDeclarations(symbolTable))
+                !CheckForDuplicateDeclarations(symbolTable) ||
+                !CheckForTypeMismatch(symbolTable))
             {
                 return false;
             }
@@ -118,6 +121,15 @@ namespace Nase.Syntax
             {
                 Logger.Error(node.ContextErrorString("Program contains at least one syntactic error."));
                 return false;
+            });
+        }
+
+        bool CheckForTypeMismatch(SymbolTable symbolTable)
+        {
+            return this._rootNode.RunDelegateForType(typeof(ITypedExpression), delegate(SyntaxTreeNode node)
+            {
+                Logger.Debug("ITypedExpression found.");
+                return true;
             });
         }
     }
