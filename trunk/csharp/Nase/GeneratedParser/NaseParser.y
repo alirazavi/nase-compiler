@@ -30,7 +30,7 @@
 %token <symbol> IDENTIFIER_SYMBOL
 %token <symbol> INTEGER_LITERAL_SYMBOL
 
-%type <iVal> integer
+//%type <iVal> integer
 %type <node> program
 %type <node> declarationSequence
 %type <node> blockSequence

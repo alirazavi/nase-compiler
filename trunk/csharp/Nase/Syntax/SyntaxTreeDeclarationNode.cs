@@ -23,26 +23,33 @@ namespace Nase.Syntax
 
         public void SetMemoryAddress(CodeGeneratorHelper storage)
         {
-            if (this._children[0] != null)
+            switch (GetTypeSymbol())
             {
-                SyntaxTreeTypeNode typeNode = this._children[0] as SyntaxTreeTypeNode;
-
-                switch (typeNode.TypeSymbol)
-                {
-                    case Symbol.INT_TYPE_SYMBOL:
-                        this._memoryAddress = storage.GetAndPushVariableAddress();
-                        break;
-                }
-            }
-            else
-            {
-                throw new Exception("Type node must not be null.");
+                case Symbol.INT_TYPE_SYMBOL:
+                    this._memoryAddress = storage.GetAndPushVariableAddress();
+                    break;
+                case Symbol.BOOL_TYPE_SYMBOL:
+                    this._memoryAddress = storage.GetAndPushVariableAddress();
+                    break;
             }
         }
 
         public ulong GetMemoryAddress()
         {
             return this._memoryAddress;
+        }
+
+        public Symbol GetTypeSymbol()
+        {
+            if (this._children[0] != null)
+            {
+                SyntaxTreeTypeNode typeNode = this._children[0] as SyntaxTreeTypeNode;
+                return typeNode.TypeSymbol;
+            }
+            else
+            {
+                throw new Exception("Type node must not be null. Should not happen after integrity check.");
+            }
         }
 
         public override void AsString(StringBuilder b, int level)

@@ -28,6 +28,17 @@ namespace Nase.Syntax
             }
         }
 
+        public virtual bool CheckForTypeMismatch(SymbolTable symbolTable)
+        {
+            foreach (var node in this._children)
+            {
+                if (node != null && !node.CheckForTypeMismatch(symbolTable))
+                    return false;
+            }
+            return true;
+        }
+
+
         public virtual void AsString(StringBuilder b, int level)
         {
             for(int i = 0; i < level; ++i)

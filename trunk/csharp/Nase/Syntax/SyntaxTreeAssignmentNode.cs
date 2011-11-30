@@ -42,6 +42,22 @@ namespace Nase.Syntax
                 && this._children[1].CheckForIntegrity();
         }
 
+        public override bool CheckForTypeMismatch(SymbolTable symbolTable)
+        {
+            if (base.CheckForTypeMismatch(symbolTable))
+            {
+                var leftNode = this._children[0] as ITypedExpression;
+                var rightNode = this._children[1] as ITypedExpression;
+                if (leftNode != null &&
+                    rightNode != null &&
+                    leftNode.GetExpressionType() == rightNode.GetExpressionType())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper codeGeneratorHelper)
         {
             AppendNodeComment(fileManager);
