@@ -7,7 +7,7 @@ using Nase.Files;
 
 namespace Nase.Syntax
 {
-    class SyntaxTreeMonadicOpNode : SyntaxTreeNode
+    class SyntaxTreeMonadicOpNode : SyntaxTreeNode, ITypedExpression
     {
         static readonly Logger Logger = LogManager.CreateLogger();
 
@@ -56,6 +56,19 @@ namespace Nase.Syntax
             return this._children[0].CheckForIntegrity();
         }
 
+        public override bool CheckForTypeMismatch()
+        {
+            if (base.CheckForTypeMismatch())
+            {
+                var expr = this._children[0] as ITypedExpression;
+                if (expr.GetExpressionType() == this.GetExpressionType())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper codeGeneratorHelper)
         {
             AppendNodeComment(fileManager);
@@ -63,6 +76,19 @@ namespace Nase.Syntax
             this._children[0].GenerateCode(fileManager, symbolTable, codeGeneratorHelper);
 
             fileManager.Output.Append(Macro.MonadicOperator(this._opCodeSymbol));
+        }
+
+        public ExpressionType GetExpressionType()
+        {
+            switch (this._opCodeSymbol)
+            {
+                case Symbol.MINUS_SYMBOL:
+                    return ExpressionType.Integer;
+                case Symbol.NOT_SYMBOL:
+                    return ExpressionType.Boolean;
+                default:
+                    throw new Exception("Unknown opcode symbol.");
+            }
         }
     }
 }

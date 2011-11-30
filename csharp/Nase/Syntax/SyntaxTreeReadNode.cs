@@ -32,6 +32,20 @@ namespace Nase.Syntax
             return this._children[0].CheckForIntegrity();
         }
 
+        public override bool CheckForTypeMismatch()
+        {
+            if (base.CheckForTypeMismatch())
+            {
+                var identNode = this._children[0] as ITypedExpression;
+                if (identNode != null &&
+                    identNode.GetExpressionType() == ExpressionType.Integer)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper labelHelper)
         {
             AppendNodeComment(fileManager);

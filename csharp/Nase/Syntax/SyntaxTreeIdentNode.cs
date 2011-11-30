@@ -7,9 +7,10 @@ using Nase.Files;
 
 namespace Nase.Syntax
 {
-    class SyntaxTreeIdentNode : SyntaxTreeNode
+    class SyntaxTreeIdentNode : SyntaxTreeNode, ITypedExpression
     {
         internal Symbol Identifier { get; private set; }
+        internal SyntaxTreeNode DeclarationNode { get; set; }
 
         public SyntaxTreeIdentNode(FilePosition position, Symbol identifier)
             : base(position)
@@ -50,6 +51,22 @@ namespace Nase.Syntax
             SyntaxTreeDeclarationNode declNode = symbolTable.GetDeclarationNodeLinkToSymbol(this.Identifier) as SyntaxTreeDeclarationNode;
 
             fileManager.Output.Append(Macro.LoadAccu(declNode.GetMemoryAddress()));
+        }
+
+        public ExpressionType GetExpressionType()
+        {
+            var declNode = DeclarationNode as SyntaxTreeDeclarationNode;
+            if (declNode != null)
+            {
+                switch (declNode.GetTypeSymbol())
+                {
+                    case Symbol.INT_TYPE_SYMBOL:
+                        return ExpressionType.Integer;
+                    case Symbol.BOOL_TYPE_SYMBOL:
+                        return ExpressionType.Boolean;
+                }
+            }
+            throw new Exception("DeclarationNode must be set to evaluate expression type.");
         }
     }
 }

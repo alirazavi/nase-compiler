@@ -6,7 +6,7 @@ using Nase.Files;
 
 namespace Nase.Syntax
 {
-    class SyntaxTreeInlineIfNode : SyntaxTreeNode
+    class SyntaxTreeInlineIfNode : SyntaxTreeNode, ITypedExpression
     {
         static readonly Logger Logger = LogManager.CreateLogger();
 
@@ -46,6 +46,26 @@ namespace Nase.Syntax
                 && this._children[2].CheckForIntegrity();
         }
 
+        public override bool CheckForTypeMismatch()
+        {
+            if (base.CheckForTypeMismatch())
+            {
+                var boolExpr = this._children[0] as ITypedExpression;
+                var thenExpr = this._children[1] as ITypedExpression;
+                var elseExpr = this._children[2] as ITypedExpression;
+
+                if (boolExpr != null &&
+                    boolExpr.GetExpressionType() == ExpressionType.Boolean &&
+                    thenExpr != null &&
+                    elseExpr != null &&
+                    thenExpr.GetExpressionType() == elseExpr.GetExpressionType())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper codeGeneratorHelper)
         {
             AppendNodeComment(fileManager);
@@ -64,6 +84,12 @@ namespace Nase.Syntax
             this._children[2].GenerateCode(fileManager, symbolTable, codeGeneratorHelper);
 
             fileManager.Output.Append(Macro.Label(fiiLabel));
+        }
+
+        public ExpressionType GetExpressionType()
+        {
+            var thenExpr = this._children[1] as ITypedExpression;
+            return thenExpr.GetExpressionType();
         }
     }
 }
