@@ -9,6 +9,8 @@ namespace Nase.Syntax
 {
     class SyntaxTreeIdentNode : SyntaxTreeNode, ITypedExpression
     {
+        static readonly Logger Logger = LogManager.CreateLogger();
+
         internal Symbol Identifier { get; private set; }
         internal SyntaxTreeNode DeclarationNode { get; set; }
 

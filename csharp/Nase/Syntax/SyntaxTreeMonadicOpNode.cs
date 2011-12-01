@@ -58,15 +58,18 @@ namespace Nase.Syntax
 
         public override bool CheckForTypeMismatch()
         {
-            if (base.CheckForTypeMismatch())
+            if (!base.CheckForTypeMismatch())
             {
-                var expr = this._children[0] as ITypedExpression;
-                if (expr.GetExpressionType() == this.GetExpressionType())
-                {
-                    return true;
-                }
+                return false;
             }
-            return false;
+            var expr = this._children[0] as ITypedExpression;
+            if (expr == null ||
+                expr.GetExpressionType() != this.GetExpressionType())
+            {
+                Logger.Error(ContextErrorString("Expression type doesn't match the operator {0}.", this._opCodeSymbol));
+                return false;
+            }
+            return true;
         }
 
         public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper codeGeneratorHelper)
