@@ -66,46 +66,52 @@ namespace Nase.Syntax
 
         public override bool CheckForTypeMismatch()
         {
-            if (base.CheckForTypeMismatch())
+            if (!base.CheckForTypeMismatch())
             {
-                var leftOp = this._children[0] as ITypedExpression;
-                var rightOp = this._children[1] as ITypedExpression;
-                if (leftOp != null &&
-                    rightOp != null)
-                {
-                    switch (this._opCodeSymbol)
-                    {
-                        case Symbol.AND_SYMBOL:
-                        case Symbol.OR_SYMBOL:
-                            if (leftOp.GetExpressionType() == ExpressionType.Boolean &&
-                                rightOp.GetExpressionType() == ExpressionType.Boolean)
-                            {
-                                return true;
-                            }
-                            break;
-                        case Symbol.PLUS_SYMBOL:
-                        case Symbol.MINUS_SYMBOL:
-                        case Symbol.TIMES_SYMBOL:
-                        case Symbol.DIVIDE_SYMBOL:
-                        case Symbol.MODULO_SYMBOL:
-                        case Symbol.EQ_SYMBOL:
-                        case Symbol.NE_SYMBOL:
-                        case Symbol.LT_SYMBOL:
-                        case Symbol.LE_SYMBOL:
-                        case Symbol.GT_SYMBOL:
-                        case Symbol.GE_SYMBOL:
-                            if (leftOp.GetExpressionType() == ExpressionType.Integer &&
-                                rightOp.GetExpressionType() == ExpressionType.Integer)
-                            {
-                                return true;
-                            }
-                            break;
-                        default:
-                            throw new Exception("Unknown opcode symbol.");
-                    }
-                }
+                return false;
             }
-            return false;
+
+            var leftOp = this._children[0] as ITypedExpression;
+            var rightOp = this._children[1] as ITypedExpression;
+            if (leftOp == null ||
+                rightOp == null)
+            {
+                return false;
+            }
+
+            switch (this._opCodeSymbol)
+            {
+                case Symbol.AND_SYMBOL:
+                case Symbol.OR_SYMBOL:
+                    if (leftOp.GetExpressionType() != ExpressionType.Boolean ||
+                        rightOp.GetExpressionType() != ExpressionType.Boolean)
+                    {
+                        Logger.Error(ContextErrorString("Boolean expressions expected on left and right side of {0}.", this._opCodeSymbol));
+                        return false;
+                    }
+                    break;
+                case Symbol.PLUS_SYMBOL:
+                case Symbol.MINUS_SYMBOL:
+                case Symbol.TIMES_SYMBOL:
+                case Symbol.DIVIDE_SYMBOL:
+                case Symbol.MODULO_SYMBOL:
+                case Symbol.EQ_SYMBOL:
+                case Symbol.NE_SYMBOL:
+                case Symbol.LT_SYMBOL:
+                case Symbol.LE_SYMBOL:
+                case Symbol.GT_SYMBOL:
+                case Symbol.GE_SYMBOL:
+                    if (leftOp.GetExpressionType() != ExpressionType.Integer ||
+                        rightOp.GetExpressionType() != ExpressionType.Integer)
+                    {
+                        Logger.Error(ContextErrorString("Integer expressions exprected on left and right side of {0}.", this._opCodeSymbol));
+                        return false;
+                    }
+                    break;
+                default:
+                    throw new Exception("Unknown opcode symbol.");
+            }
+            return true;
         }
 
         public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper codeGeneratorHelper)

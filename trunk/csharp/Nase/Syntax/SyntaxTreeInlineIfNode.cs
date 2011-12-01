@@ -48,22 +48,28 @@ namespace Nase.Syntax
 
         public override bool CheckForTypeMismatch()
         {
-            if (base.CheckForTypeMismatch())
+            if (!base.CheckForTypeMismatch())
             {
-                var boolExpr = this._children[0] as ITypedExpression;
-                var thenExpr = this._children[1] as ITypedExpression;
-                var elseExpr = this._children[2] as ITypedExpression;
-
-                if (boolExpr != null &&
-                    boolExpr.GetExpressionType() == ExpressionType.Boolean &&
-                    thenExpr != null &&
-                    elseExpr != null &&
-                    thenExpr.GetExpressionType() == elseExpr.GetExpressionType())
-                {
-                    return true;
-                }
+                return false;
             }
-            return false;
+            var boolExpr = this._children[0] as ITypedExpression;
+            var thenExpr = this._children[1] as ITypedExpression;
+            var elseExpr = this._children[2] as ITypedExpression;
+
+            if (boolExpr == null ||
+                boolExpr.GetExpressionType() != ExpressionType.Boolean)
+            {
+                Logger.Error(ContextErrorString("Inline-If expects a boolean expression as condition."));
+                return false;
+            }
+            if (thenExpr == null ||
+                elseExpr == null ||
+                thenExpr.GetExpressionType() != elseExpr.GetExpressionType())
+            {
+                Logger.Error(ContextErrorString("Inline-If expects same expression types in then and else."));
+                return false;
+            }
+            return true;
         }
 
         public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper codeGeneratorHelper)

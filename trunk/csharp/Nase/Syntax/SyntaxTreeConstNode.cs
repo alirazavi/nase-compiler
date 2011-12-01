@@ -9,6 +9,8 @@ namespace Nase.Syntax
 {
     class SyntaxTreeConstNode : SyntaxTreeNode, ITypedExpression
     {
+        static readonly Logger Logger = LogManager.CreateLogger();
+
         internal Symbol ConstSymbol { get; private set; }
         bool _addressReserved;
         ulong _memoryAddress;

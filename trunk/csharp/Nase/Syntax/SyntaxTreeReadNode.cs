@@ -34,16 +34,19 @@ namespace Nase.Syntax
 
         public override bool CheckForTypeMismatch()
         {
-            if (base.CheckForTypeMismatch())
+            if (!base.CheckForTypeMismatch())
             {
-                var identNode = this._children[0] as ITypedExpression;
-                if (identNode != null &&
-                    identNode.GetExpressionType() == ExpressionType.Integer)
-                {
-                    return true;
-                }
+                return false;
             }
-            return false;
+
+            var identNode = this._children[0] as ITypedExpression;
+            if (identNode == null ||
+                identNode.GetExpressionType() != ExpressionType.Integer)
+            {
+                Logger.Error(ContextErrorString("READ expects an integer identifier."));
+                return false;
+            }
+            return true;
         }
 
         public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper labelHelper)

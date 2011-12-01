@@ -44,18 +44,21 @@ namespace Nase.Syntax
 
         public override bool CheckForTypeMismatch()
         {
-            if (base.CheckForTypeMismatch())
+            if (!base.CheckForTypeMismatch())
             {
-                var leftNode = this._children[0] as ITypedExpression;
-                var rightNode = this._children[1] as ITypedExpression;
-                if (leftNode != null &&
-                    rightNode != null &&
-                    leftNode.GetExpressionType() == rightNode.GetExpressionType())
-                {
-                    return true;
-                }
+                return false;
             }
-            return false;
+
+            var leftNode = this._children[0] as ITypedExpression;
+            var rightNode = this._children[1] as ITypedExpression;
+            if (leftNode == null ||
+                rightNode == null ||
+                leftNode.GetExpressionType() != rightNode.GetExpressionType())
+            {
+                Logger.Error(ContextErrorString("Identifier type doesn't match the expression type at"));
+                return false;
+            }
+            return true;
         }
 
         public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper codeGeneratorHelper)

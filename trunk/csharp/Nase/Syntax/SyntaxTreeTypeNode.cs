@@ -9,6 +9,8 @@ namespace Nase.Syntax
 {
     class SyntaxTreeTypeNode : SyntaxTreeNode
     {
+        static readonly Logger Logger = LogManager.CreateLogger();
+
         internal Symbol TypeSymbol { get; private set; }
 
         public SyntaxTreeTypeNode(FilePosition position, Symbol typeSymbol)

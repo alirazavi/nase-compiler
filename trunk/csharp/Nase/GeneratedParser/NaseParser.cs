@@ -3,10 +3,10 @@
 // (see accompanying GPPGcopyright.rtf)
 
 // GPPG version 1.4.5
-// Machine:  VM-ID0050B
-// DateTime: 30.11.2011 17:28:27
-// UserName: ib
-// Input file <NaseParser.y - 30.11.2011 13:44:56>
+// Machine:  DARKONE-L
+// DateTime: 01.12.2011 10:44:43
+// UserName: darkone
+// Input file <NaseParser.y - 30.11.2011 23:14:56>
 
 // options: lines
 
@@ -231,506 +231,506 @@ public partial class NaseParser: ShiftReduceParser<ValueType, FilePosition>
     switch (action)
     {
       case 2: // program -> declarationSequence, blockSequence, EOF
-#line 66 "NaseParser.y"
+#line 65 "NaseParser.y"
 {
-#line 67 "NaseParser.y"
+#line 66 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeProgramNode(CurrentLocationSpan, new SyntaxTreeSequenceNode(LocationStack[LocationStack.Depth-3], ValueStack[ValueStack.Depth-3].node, new SyntaxTreeSequenceNode(LocationStack[LocationStack.Depth-2], ValueStack[ValueStack.Depth-2].node, null)));
-#line 68 "NaseParser.y"
+#line 67 "NaseParser.y"
                 SyntaxTree = new SyntaxTree(CurrentSemanticValue.node);
-#line 69 "NaseParser.y"
+#line 68 "NaseParser.y"
             }
         break;
       case 3: // program -> blockSequence, EOF
-#line 71 "NaseParser.y"
+#line 70 "NaseParser.y"
 {
-#line 72 "NaseParser.y"
+#line 71 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeProgramNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-2].node);
-#line 73 "NaseParser.y"
+#line 72 "NaseParser.y"
                 SyntaxTree = new SyntaxTree(CurrentSemanticValue.node);
-#line 74 "NaseParser.y"
+#line 73 "NaseParser.y"
             }
         break;
       case 4: // declarationSequence -> declaration, DELIMITER_SYMBOL, declarationSequence
-#line 79 "NaseParser.y"
+#line 78 "NaseParser.y"
 {
-#line 80 "NaseParser.y"
+#line 79 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeSequenceNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 81 "NaseParser.y"
+#line 80 "NaseParser.y"
             }
         break;
       case 5: // declarationSequence -> declaration, DELIMITER_SYMBOL
-#line 83 "NaseParser.y"
+#line 82 "NaseParser.y"
 {
-#line 84 "NaseParser.y"
+#line 83 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeSequenceNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-2].node, null);
-#line 85 "NaseParser.y"
+#line 84 "NaseParser.y"
             }
         break;
       case 6: // blockSequence -> block, DELIMITER_SYMBOL, blockSequence
-#line 90 "NaseParser.y"
+#line 89 "NaseParser.y"
 {
-#line 91 "NaseParser.y"
+#line 90 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeSequenceNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 92 "NaseParser.y"
+#line 91 "NaseParser.y"
             }
         break;
       case 7: // blockSequence -> block, DELIMITER_SYMBOL
-#line 94 "NaseParser.y"
+#line 93 "NaseParser.y"
 {
-#line 95 "NaseParser.y"
+#line 94 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeSequenceNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-2].node, null);
-#line 96 "NaseParser.y"
+#line 95 "NaseParser.y"
             }
         break;
       case 8: // block -> BEGIN_SYMBOL, statementSequence, END_SYMBOL
-#line 101 "NaseParser.y"
+#line 100 "NaseParser.y"
 {
-#line 102 "NaseParser.y"
+#line 101 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-2].node;
-#line 103 "NaseParser.y"
+#line 102 "NaseParser.y"
             }
         break;
       case 9: // statementSequence -> statement, statementSequence
-#line 108 "NaseParser.y"
+#line 107 "NaseParser.y"
 {
-#line 109 "NaseParser.y"
+#line 108 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeSequenceNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-2].node, ValueStack[ValueStack.Depth-1].node);
-#line 110 "NaseParser.y"
+#line 109 "NaseParser.y"
             }
         break;
       case 10: // statementSequence -> statement
-#line 112 "NaseParser.y"
+#line 111 "NaseParser.y"
 {
-#line 113 "NaseParser.y"
+#line 112 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeSequenceNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-1].node, null);
-#line 114 "NaseParser.y"
+#line 113 "NaseParser.y"
             }
         break;
       case 11: // statement -> declaration, DELIMITER_SYMBOL
-#line 119 "NaseParser.y"
+#line 118 "NaseParser.y"
 {
-#line 120 "NaseParser.y"
+#line 119 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-2].node;
-#line 121 "NaseParser.y"
+#line 120 "NaseParser.y"
             }
         break;
       case 12: // statement -> block
-#line 123 "NaseParser.y"
+#line 122 "NaseParser.y"
 {
-#line 124 "NaseParser.y"
+#line 123 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 125 "NaseParser.y"
+#line 124 "NaseParser.y"
             }
         break;
       case 13: // statement -> assignment, DELIMITER_SYMBOL
-#line 127 "NaseParser.y"
+#line 126 "NaseParser.y"
 {
-#line 128 "NaseParser.y"
+#line 127 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-2].node;
-#line 129 "NaseParser.y"
+#line 128 "NaseParser.y"
             }
         break;
       case 14: // statement -> read, DELIMITER_SYMBOL
-#line 131 "NaseParser.y"
+#line 130 "NaseParser.y"
 {
-#line 132 "NaseParser.y"
+#line 131 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-2].node;
-#line 133 "NaseParser.y"
+#line 132 "NaseParser.y"
             }
         break;
       case 15: // statement -> write, DELIMITER_SYMBOL
-#line 135 "NaseParser.y"
+#line 134 "NaseParser.y"
 {
-#line 136 "NaseParser.y"
+#line 135 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-2].node;
-#line 137 "NaseParser.y"
+#line 136 "NaseParser.y"
             }
         break;
       case 16: // declaration -> typeName, IDENTIFIER_SYMBOL, declarationRec
-#line 142 "NaseParser.y"
+#line 141 "NaseParser.y"
 {
-#line 143 "NaseParser.y"
+#line 142 "NaseParser.y"
                 SyntaxTreeDeclarationNode declNode = null;
-#line 144 "NaseParser.y"
+#line 143 "NaseParser.y"
                 SyntaxTreeSequenceNode seqNode = null;
+#line 144 "NaseParser.y"
+
 #line 145 "NaseParser.y"
-
-#line 146 "NaseParser.y"
                 var firstDeclNode = new SyntaxTreeDeclarationNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-2].symbol);
-#line 147 "NaseParser.y"
+#line 146 "NaseParser.y"
                 this._symbolTable.SetDeclarationNodeLinkToSymbol(ValueStack[ValueStack.Depth-2].symbol, firstDeclNode);
+#line 147 "NaseParser.y"
+
 #line 148 "NaseParser.y"
-
-#line 149 "NaseParser.y"
                 foreach(Symbol s in ValueStack[ValueStack.Depth-1].symbolList)
-#line 150 "NaseParser.y"
+#line 149 "NaseParser.y"
                 {
-#line 151 "NaseParser.y"
+#line 150 "NaseParser.y"
                     declNode = new SyntaxTreeDeclarationNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-3].node, s);
-#line 152 "NaseParser.y"
+#line 151 "NaseParser.y"
                     this._symbolTable.SetDeclarationNodeLinkToSymbol(s, declNode);
-#line 153 "NaseParser.y"
+#line 152 "NaseParser.y"
                     seqNode = new SyntaxTreeSequenceNode(CurrentLocationSpan, declNode, seqNode);
-#line 154 "NaseParser.y"
+#line 153 "NaseParser.y"
                 }
-#line 155 "NaseParser.y"
+#line 154 "NaseParser.y"
 
-#line 156 "NaseParser.y"
+#line 155 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeSequenceNode(CurrentLocationSpan, firstDeclNode, seqNode);
-#line 157 "NaseParser.y"
+#line 156 "NaseParser.y"
             }
         break;
       case 17: // declaration -> typeName, IDENTIFIER_SYMBOL
-#line 159 "NaseParser.y"
+#line 158 "NaseParser.y"
 {
-#line 160 "NaseParser.y"
+#line 159 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDeclarationNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-2].node, ValueStack[ValueStack.Depth-1].symbol);
-#line 161 "NaseParser.y"
+#line 160 "NaseParser.y"
                 this._symbolTable.SetDeclarationNodeLinkToSymbol(ValueStack[ValueStack.Depth-1].symbol, CurrentSemanticValue.node);
-#line 162 "NaseParser.y"
+#line 161 "NaseParser.y"
             }
         break;
       case 18: // declarationRec -> COMMA_SYMBOL, IDENTIFIER_SYMBOL, declarationRec
-#line 167 "NaseParser.y"
+#line 166 "NaseParser.y"
 {
-#line 168 "NaseParser.y"
+#line 167 "NaseParser.y"
                 CurrentSemanticValue.symbolList = ValueStack[ValueStack.Depth-1].symbolList;
-#line 169 "NaseParser.y"
+#line 168 "NaseParser.y"
                 CurrentSemanticValue.symbolList.Add(ValueStack[ValueStack.Depth-2].symbol);
-#line 170 "NaseParser.y"
+#line 169 "NaseParser.y"
             }
         break;
       case 19: // declarationRec -> COMMA_SYMBOL, IDENTIFIER_SYMBOL
-#line 172 "NaseParser.y"
+#line 171 "NaseParser.y"
 {
-#line 173 "NaseParser.y"
+#line 172 "NaseParser.y"
                 CurrentSemanticValue.symbolList = new List<Symbol>();
-#line 174 "NaseParser.y"
+#line 173 "NaseParser.y"
                 CurrentSemanticValue.symbolList.Add(ValueStack[ValueStack.Depth-1].symbol);
-#line 175 "NaseParser.y"
+#line 174 "NaseParser.y"
             }
         break;
       case 20: // typeName -> INT_TYPE_SYMBOL
-#line 180 "NaseParser.y"
+#line 179 "NaseParser.y"
 {
-#line 181 "NaseParser.y"
+#line 180 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeTypeNode(CurrentLocationSpan, Symbol.INT_TYPE_SYMBOL);
-#line 182 "NaseParser.y"
+#line 181 "NaseParser.y"
             }
         break;
       case 21: // typeName -> BOOL_TYPE_SYMBOL
-#line 184 "NaseParser.y"
+#line 183 "NaseParser.y"
 {
-#line 185 "NaseParser.y"
+#line 184 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeTypeNode(CurrentLocationSpan, Symbol.BOOL_TYPE_SYMBOL);
-#line 186 "NaseParser.y"
+#line 185 "NaseParser.y"
             }
         break;
       case 22: // assignment -> identifier, ASSIGN_SYMBOL, intExpr
-#line 191 "NaseParser.y"
+#line 190 "NaseParser.y"
 {
-#line 192 "NaseParser.y"
+#line 191 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeAssignmentNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 193 "NaseParser.y"
+#line 192 "NaseParser.y"
             }
         break;
       case 23: // assignment -> identifier, ASSIGN_SYMBOL, boolExpr
-#line 195 "NaseParser.y"
+#line 194 "NaseParser.y"
 {
-#line 196 "NaseParser.y"
+#line 195 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeAssignmentNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 197 "NaseParser.y"
+#line 196 "NaseParser.y"
             }
         break;
       case 24: // intExpr -> intTerm, PLUS_SYMBOL, intExpr
-#line 202 "NaseParser.y"
+#line 201 "NaseParser.y"
 {
-#line 203 "NaseParser.y"
+#line 202 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.PLUS_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 204 "NaseParser.y"
+#line 203 "NaseParser.y"
             }
         break;
       case 25: // intExpr -> intTerm, MINUS_SYMBOL, intExpr
-#line 206 "NaseParser.y"
+#line 205 "NaseParser.y"
 {
-#line 207 "NaseParser.y"
+#line 206 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.MINUS_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 208 "NaseParser.y"
+#line 207 "NaseParser.y"
             }
         break;
       case 26: // intExpr -> intTerm
-#line 210 "NaseParser.y"
+#line 209 "NaseParser.y"
 {
-#line 211 "NaseParser.y"
+#line 210 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 212 "NaseParser.y"
+#line 211 "NaseParser.y"
             }
         break;
       case 27: // intTerm -> MINUS_SYMBOL, intTermSecondary
-#line 217 "NaseParser.y"
+#line 216 "NaseParser.y"
 {
-#line 218 "NaseParser.y"
+#line 217 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeMonadicOpNode(CurrentLocationSpan, Symbol.MINUS_SYMBOL, ValueStack[ValueStack.Depth-1].node);
-#line 219 "NaseParser.y"
+#line 218 "NaseParser.y"
             }
         break;
       case 28: // intTerm -> intTermSecondary
-#line 221 "NaseParser.y"
+#line 220 "NaseParser.y"
 {
-#line 222 "NaseParser.y"
+#line 221 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 223 "NaseParser.y"
+#line 222 "NaseParser.y"
             }
         break;
       case 29: // intTermSecondary -> intFactor, TIMES_SYMBOL, intTerm
-#line 228 "NaseParser.y"
+#line 227 "NaseParser.y"
 {
-#line 229 "NaseParser.y"
+#line 228 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.TIMES_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 230 "NaseParser.y"
+#line 229 "NaseParser.y"
             }
         break;
       case 30: // intTermSecondary -> intFactor, DIVIDE_SYMBOL, intTerm
-#line 232 "NaseParser.y"
+#line 231 "NaseParser.y"
 {
-#line 233 "NaseParser.y"
+#line 232 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.DIVIDE_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 234 "NaseParser.y"
+#line 233 "NaseParser.y"
             }
         break;
       case 31: // intTermSecondary -> intFactor, MODULO_SYMBOL, intTerm
-#line 236 "NaseParser.y"
+#line 235 "NaseParser.y"
 {
-#line 237 "NaseParser.y"
+#line 236 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.MODULO_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 238 "NaseParser.y"
+#line 237 "NaseParser.y"
             }
         break;
       case 32: // intTermSecondary -> intFactor
-#line 240 "NaseParser.y"
+#line 239 "NaseParser.y"
 {
-#line 241 "NaseParser.y"
+#line 240 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 242 "NaseParser.y"
+#line 241 "NaseParser.y"
             }
         break;
       case 33: // intFactor -> integer
-#line 247 "NaseParser.y"
+#line 246 "NaseParser.y"
 {
-#line 248 "NaseParser.y"
+#line 247 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 249 "NaseParser.y"
+#line 248 "NaseParser.y"
             }
         break;
       case 34: // intFactor -> identifier
-#line 251 "NaseParser.y"
+#line 250 "NaseParser.y"
 {
-#line 252 "NaseParser.y"
+#line 251 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 253 "NaseParser.y"
+#line 252 "NaseParser.y"
             }
         break;
       case 35: // intFactor -> OPEN_PARENTHESIS_SYMBOL, intExpr, CLOSE_PARENTHESIS_SYMBOL
-#line 255 "NaseParser.y"
+#line 254 "NaseParser.y"
 {
-#line 256 "NaseParser.y"
+#line 255 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-2].node;
-#line 257 "NaseParser.y"
+#line 256 "NaseParser.y"
             }
         break;
       case 36: // intFactor -> inlineIfStatement
-#line 259 "NaseParser.y"
+#line 258 "NaseParser.y"
 {
-#line 260 "NaseParser.y"
+#line 259 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 261 "NaseParser.y"
+#line 260 "NaseParser.y"
             }
         break;
       case 37: // inlineIfStatement -> INLINE_IF_SYMBOL, boolExpr, INLINE_THEN_SYMBOL, intExpr, 
                //                      INLINE_ELSE_SYMBOL, intExpr, INLINE_FI_SYMBOL
-#line 266 "NaseParser.y"
+#line 265 "NaseParser.y"
 {
-#line 267 "NaseParser.y"
+#line 266 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeInlineIfNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-6].node, ValueStack[ValueStack.Depth-4].node, ValueStack[ValueStack.Depth-2].node);
-#line 268 "NaseParser.y"
+#line 267 "NaseParser.y"
             }
         break;
       case 38: // boolExpr -> boolTerm, OR_SYMBOL, boolExpr
-#line 273 "NaseParser.y"
+#line 272 "NaseParser.y"
 {
-#line 274 "NaseParser.y"
+#line 273 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.OR_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 275 "NaseParser.y"
+#line 274 "NaseParser.y"
             }
         break;
       case 39: // boolExpr -> boolTerm
-#line 277 "NaseParser.y"
+#line 276 "NaseParser.y"
 {
-#line 278 "NaseParser.y"
+#line 277 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 279 "NaseParser.y"
+#line 278 "NaseParser.y"
             }
         break;
       case 40: // boolTerm -> NOT_SYMBOL, boolTermSecondary
-#line 284 "NaseParser.y"
+#line 283 "NaseParser.y"
 {
-#line 285 "NaseParser.y"
+#line 284 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeMonadicOpNode(CurrentLocationSpan, Symbol.NOT_SYMBOL, ValueStack[ValueStack.Depth-1].node);
-#line 286 "NaseParser.y"
+#line 285 "NaseParser.y"
             }
         break;
       case 41: // boolTerm -> boolTermSecondary
-#line 288 "NaseParser.y"
+#line 287 "NaseParser.y"
 {
-#line 289 "NaseParser.y"
+#line 288 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 290 "NaseParser.y"
+#line 289 "NaseParser.y"
             }
         break;
       case 42: // boolTermSecondary -> boolFactor, AND_SYMBOL, boolTermSecondary
-#line 295 "NaseParser.y"
+#line 294 "NaseParser.y"
 {
-#line 296 "NaseParser.y"
+#line 295 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.AND_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 297 "NaseParser.y"
+#line 296 "NaseParser.y"
             }
         break;
       case 43: // boolTermSecondary -> boolFactor
-#line 299 "NaseParser.y"
+#line 298 "NaseParser.y"
 {
-#line 300 "NaseParser.y"
+#line 299 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 301 "NaseParser.y"
+#line 300 "NaseParser.y"
             }
         break;
       case 44: // boolFactor -> TRUE_SYMBOL
-#line 306 "NaseParser.y"
+#line 305 "NaseParser.y"
 {
-#line 307 "NaseParser.y"
+#line 306 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeConstNode(CurrentLocationSpan, Symbol.TRUE_SYMBOL);
-#line 308 "NaseParser.y"
+#line 307 "NaseParser.y"
             }
         break;
       case 45: // boolFactor -> FALSE_SYMBOL
-#line 310 "NaseParser.y"
+#line 309 "NaseParser.y"
 {
-#line 311 "NaseParser.y"
+#line 310 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeConstNode(CurrentLocationSpan, Symbol.FALSE_SYMBOL);
-#line 312 "NaseParser.y"
+#line 311 "NaseParser.y"
             }
         break;
       case 46: // boolFactor -> identifier
-#line 314 "NaseParser.y"
+#line 313 "NaseParser.y"
 {
-#line 315 "NaseParser.y"
+#line 314 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 316 "NaseParser.y"
+#line 315 "NaseParser.y"
             }
         break;
       case 47: // boolFactor -> comparisonExpr
-#line 318 "NaseParser.y"
+#line 317 "NaseParser.y"
 {
-#line 319 "NaseParser.y"
+#line 318 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-1].node;
-#line 320 "NaseParser.y"
+#line 319 "NaseParser.y"
             }
         break;
       case 48: // boolFactor -> OPEN_PARENTHESIS_SYMBOL, boolExpr, CLOSE_PARENTHESIS_SYMBOL
-#line 322 "NaseParser.y"
+#line 321 "NaseParser.y"
 {
-#line 323 "NaseParser.y"
+#line 322 "NaseParser.y"
                 CurrentSemanticValue.node = ValueStack[ValueStack.Depth-2].node;
-#line 324 "NaseParser.y"
+#line 323 "NaseParser.y"
             }
         break;
       case 49: // comparisonExpr -> intExpr, LT_SYMBOL, intExpr
-#line 329 "NaseParser.y"
+#line 328 "NaseParser.y"
 {
-#line 330 "NaseParser.y"
+#line 329 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.LT_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 331 "NaseParser.y"
+#line 330 "NaseParser.y"
             }
         break;
       case 50: // comparisonExpr -> intExpr, LE_SYMBOL, intExpr
-#line 333 "NaseParser.y"
+#line 332 "NaseParser.y"
 {
-#line 334 "NaseParser.y"
+#line 333 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.LE_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 335 "NaseParser.y"
+#line 334 "NaseParser.y"
             }
         break;
       case 51: // comparisonExpr -> intExpr, EQ_SYMBOL, intExpr
-#line 337 "NaseParser.y"
+#line 336 "NaseParser.y"
 {
-#line 338 "NaseParser.y"
+#line 337 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.EQ_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 339 "NaseParser.y"
+#line 338 "NaseParser.y"
             }
         break;
       case 52: // comparisonExpr -> intExpr, GE_SYMBOL, intExpr
-#line 341 "NaseParser.y"
+#line 340 "NaseParser.y"
 {
-#line 342 "NaseParser.y"
+#line 341 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.GE_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 343 "NaseParser.y"
+#line 342 "NaseParser.y"
             }
         break;
       case 53: // comparisonExpr -> intExpr, GT_SYMBOL, intExpr
-#line 345 "NaseParser.y"
+#line 344 "NaseParser.y"
 {
-#line 346 "NaseParser.y"
+#line 345 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.GT_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 347 "NaseParser.y"
+#line 346 "NaseParser.y"
             }
         break;
       case 54: // comparisonExpr -> intExpr, NE_SYMBOL, intExpr
-#line 349 "NaseParser.y"
+#line 348 "NaseParser.y"
 {
-#line 350 "NaseParser.y"
+#line 349 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeDyadicOpNode(CurrentLocationSpan, Symbol.NE_SYMBOL, ValueStack[ValueStack.Depth-3].node, ValueStack[ValueStack.Depth-1].node);
-#line 351 "NaseParser.y"
+#line 350 "NaseParser.y"
             }
         break;
       case 55: // identifier -> IDENTIFIER_SYMBOL
-#line 356 "NaseParser.y"
+#line 355 "NaseParser.y"
 {
-#line 357 "NaseParser.y"
+#line 356 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeIdentNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-1].symbol);
-#line 358 "NaseParser.y"
+#line 357 "NaseParser.y"
             }
         break;
       case 56: // integer -> INTEGER_LITERAL_SYMBOL
-#line 363 "NaseParser.y"
+#line 362 "NaseParser.y"
 {
-#line 364 "NaseParser.y"
+#line 363 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeConstNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-1].symbol);
-#line 365 "NaseParser.y"
+#line 364 "NaseParser.y"
                 this._symbolTable.SetDeclarationNodeLinkToSymbol(ValueStack[ValueStack.Depth-1].symbol, CurrentSemanticValue.node);
-#line 366 "NaseParser.y"
+#line 365 "NaseParser.y"
             }
         break;
       case 57: // read -> READ_SYMBOL, identifier
-#line 371 "NaseParser.y"
+#line 370 "NaseParser.y"
 {
-#line 372 "NaseParser.y"
+#line 371 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeReadNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-1].node);
-#line 373 "NaseParser.y"
+#line 372 "NaseParser.y"
             }
         break;
       case 58: // write -> WRITE_SYMBOL, intExpr
-#line 378 "NaseParser.y"
+#line 377 "NaseParser.y"
 {
-#line 379 "NaseParser.y"
+#line 378 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeWriteNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-1].node);
-#line 380 "NaseParser.y"
+#line 379 "NaseParser.y"
             }
         break;
       case 59: // write -> WRITE_SYMBOL, boolExpr
-#line 382 "NaseParser.y"
+#line 381 "NaseParser.y"
 {
-#line 383 "NaseParser.y"
+#line 382 "NaseParser.y"
                 CurrentSemanticValue.node = new SyntaxTreeWriteNode(CurrentLocationSpan, ValueStack[ValueStack.Depth-1].node);
-#line 384 "NaseParser.y"
+#line 383 "NaseParser.y"
             }
         break;
     }

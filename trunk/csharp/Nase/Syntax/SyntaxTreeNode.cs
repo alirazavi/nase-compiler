@@ -64,11 +64,6 @@ namespace Nase.Syntax
             return string.Format("CONTEXT ERROR near {0}: {1}", PositionAsString(), fullMessage);
         }
 
-        string PositionAsString()
-        {
-            return String.Format("line {0}, column {1}", this._position.StartLine, this._position.StartColumn);
-        }
-
         internal bool RunDelegateForType(System.Type type, SyntaxTree.TreeNodeDelegate delegateToRun)
         {
             bool result = true;
@@ -87,6 +82,11 @@ namespace Nase.Syntax
         protected void AppendNodeComment(FileManager fileManager)
         {
             fileManager.Output.AppendLine("% POSITION {0}/{1}: begin coding of {2}", this._position.StartLine, this._position.StartColumn, this.GetType().Name);
+        }
+
+        protected string PositionAsString()
+        {
+            return String.Format("line {0}, column {1}", this._position.StartLine, this._position.StartColumn);
         }
     }
 }
