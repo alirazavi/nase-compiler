@@ -115,6 +115,7 @@
     <Compile Include="Nase\Syntax\SyntaxTreeIdentNode.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Nase\Syntax\SyntaxTreeIfStatementNode.cs" />
     <Compile Include="Nase\Syntax\SyntaxTreeInlineIfNode.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -139,6 +140,7 @@
     <Compile Include="Nase\Syntax\SyntaxTreeTypeNode.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Nase\Syntax\SyntaxTreeWhileStatementNode.cs" />
     <Compile Include="Nase\Syntax\SyntaxTreeWriteNode.cs">
       <SubType>Code</SubType>
     </Compile>

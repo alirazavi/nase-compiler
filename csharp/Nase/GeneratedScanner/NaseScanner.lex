@@ -22,8 +22,13 @@ orKeyword      [Oo][Rr]
 notKeyword     [Nn][Oo][Tt]
 iifKeyword     [Ii][Ii][Ff]
 fiiKeyword     [Ff][Ii][Ii]
-trueKeyword    [Tr][Rr][Uu][Ee]
+trueKeyword    [Tt][Rr][Uu][Ee]
 falseKeyword   [Ff][Aa][Ll][Ss][Ee]
+ifKeyword      [Ii][Ff]
+thenKeyword    [Tt][Hh][Ee][Nn]
+elseKeyword    [Ee][Ll][Ss][Ee]
+whileKeyword   [Ww][Hh][Ii][Ll][Ee]
+doKeyword      [Dd][Oo]
 
 %%
 
@@ -43,6 +48,11 @@ falseKeyword   [Ff][Aa][Ll][Ss][Ee]
 {booleanKeyword}      { return (int)Symbol.BOOL_TYPE_SYMBOL; }
 {readKeyword}         { return (int)Symbol.READ_SYMBOL; }
 {writeKeyword}        { return (int)Symbol.WRITE_SYMBOL; }
+{ifKeyword}           { return (int)Symbol.IF_SYMBOL; }
+{thenKeyword}         { return (int)Symbol.THEN_SYMBOL; }
+{elseKeyword}         { return (int)Symbol.ELSE_SYMBOL; }
+{whileKeyword}        { return (int)Symbol.WHILE_SYMBOL; }
+{doKeyword}           { return (int)Symbol.DO_SYMBOL; }
 {andKeyword}          { return (int)Symbol.AND_SYMBOL; }
 {orKeyword}           { return (int)Symbol.OR_SYMBOL; }
 {notKeyword}          { return (int)Symbol.NOT_SYMBOL; }
