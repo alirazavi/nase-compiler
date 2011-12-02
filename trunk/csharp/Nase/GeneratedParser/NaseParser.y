@@ -18,6 +18,8 @@
 %token INT_TYPE_SYMBOL
 %token BOOL_TYPE_SYMBOL
 %token READ_SYMBOL WRITE_SYMBOL
+%token IF_SYMBOL THEN_SYMBOL ELSE_SYMBOL
+%token WHILE_SYMBOL DO_SYMBOL
 %token ASSIGN_SYMBOL
 %token OPEN_PARENTHESIS_SYMBOL CLOSE_PARENTHESIS_SYMBOL
 %token INLINE_IF_SYMBOL INLINE_THEN_SYMBOL INLINE_ELSE_SYMBOL INLINE_FI_SYMBOL
@@ -52,6 +54,8 @@
 %type <node> boolFactor
 %type <node> comparisonExpr
 %type <node> inlineIfStatement
+%type <node> ifStatement
+%type <node> whileStatement
 
 %type <node> identifier
 %type <node> integer
@@ -85,18 +89,18 @@ declarationSequence :
     ;
 
 blockSequence :
-        block DELIMITER_SYMBOL blockSequence
+        block blockSequence
             {
-                $$ = new SyntaxTreeSequenceNode(@$, $1, $3);
+                $$ = new SyntaxTreeSequenceNode(@$, $1, $2);
             }
-    |    block DELIMITER_SYMBOL
+    |    block
             {
                 $$ = new SyntaxTreeSequenceNode(@$, $1, null);
             }
     ;
 
 block :
-        BEGIN_SYMBOL statementSequence END_SYMBOL
+        BEGIN_SYMBOL statementSequence END_SYMBOL DELIMITER_SYMBOL
             {
                 $$ = $2;
             }
@@ -131,6 +135,14 @@ statement :
                 $$ = $1;
             }
     |    write DELIMITER_SYMBOL
+            {
+                $$ = $1;
+            }
+    |    ifStatement
+            {
+                $$ = $1;
+            }
+    |    whileStatement
             {
                 $$ = $1;
             }
@@ -309,11 +321,11 @@ boolFactor :
             {
                 $$ = new SyntaxTreeConstNode(@$, Symbol.FALSE_SYMBOL);
             }
-    |    identifier
+    |    comparisonExpr
             {
                 $$ = $1;
             }
-    |    comparisonExpr
+    |    identifier
             {
                 $$ = $1;
             }
@@ -380,5 +392,23 @@ write :
     |    WRITE_SYMBOL boolExpr
             {
                 $$ = new SyntaxTreeWriteNode(@$, $2);
+            }
+    ;
+
+ifStatement :
+        IF_SYMBOL boolExpr THEN_SYMBOL statement ELSE_SYMBOL statement
+            {
+                $$ = new SyntaxTreeIfStatementNode(@$, $2, $4, $6);
+            }
+    |    IF_SYMBOL boolExpr THEN_SYMBOL statement
+            {
+                $$ = new SyntaxTreeIfStatementNode(@$, $2, $4, null);
+            }
+    ;
+
+whileStatement :
+        WHILE_SYMBOL boolExpr DO_SYMBOL statement
+            {
+                $$ = new SyntaxTreeWhileStatementNode(@$, $2, $4);
             }
     ;

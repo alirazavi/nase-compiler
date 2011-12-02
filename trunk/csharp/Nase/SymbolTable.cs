@@ -85,6 +85,11 @@ namespace Nase
             AddFixSymbol("BOOLEAN", false);
             AddFixSymbol("READ", false);
             AddFixSymbol("WRITE", false);
+            AddFixSymbol("IF", false);
+            AddFixSymbol("THEN", false);
+            AddFixSymbol("ELSE", false);
+            AddFixSymbol("WHILE", false);
+            AddFixSymbol("DO", false);
             AddFixSymbol(":=", true);
             AddFixSymbol("(", true);
             AddFixSymbol(")", true);

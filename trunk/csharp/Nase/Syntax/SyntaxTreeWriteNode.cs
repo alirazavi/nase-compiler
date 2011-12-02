@@ -32,15 +32,12 @@ namespace Nase.Syntax
             return this._children[0].CheckForIntegrity();
         }
 
-        public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper labelHelper)
+        public override void GenerateCode(FileManager fileManager, SymbolTable symbolTable, CodeGeneratorHelper codeGeneratorHelper)
         {
             AppendNodeComment(fileManager);
 
-            SyntaxTreeIdentNode identNode = this._children[0] as SyntaxTreeIdentNode;
-            Symbol identSymbol = identNode.Identifier;
-            SyntaxTreeDeclarationNode declNode = symbolTable.GetDeclarationNodeLinkToSymbol(identSymbol) as SyntaxTreeDeclarationNode;
+            this._children[0].GenerateCode(fileManager, symbolTable, codeGeneratorHelper);
 
-            fileManager.Output.Append(Macro.LoadAccu(declNode.GetMemoryAddress()));
             fileManager.Output.Append(Macro.WriteOutAccuValue());
         }
     }
