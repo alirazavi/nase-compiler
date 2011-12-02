@@ -29,6 +29,7 @@ thenKeyword    [Tt][Hh][Ee][Nn]
 elseKeyword    [Ee][Ll][Ss][Ee]
 whileKeyword   [Ww][Hh][Ii][Ll][Ee]
 doKeyword      [Dd][Oo]
+forKeyword     [Ff][Oo][Rr]
 
 %%
 
@@ -53,6 +54,7 @@ doKeyword      [Dd][Oo]
 {elseKeyword}         { return (int)Symbol.ELSE_SYMBOL; }
 {whileKeyword}        { return (int)Symbol.WHILE_SYMBOL; }
 {doKeyword}           { return (int)Symbol.DO_SYMBOL; }
+{forKeyword}          { return (int)Symbol.FOR_SYMBOL; }
 {andKeyword}          { return (int)Symbol.AND_SYMBOL; }
 {orKeyword}           { return (int)Symbol.OR_SYMBOL; }
 {notKeyword}          { return (int)Symbol.NOT_SYMBOL; }
@@ -78,21 +80,12 @@ doKeyword      [Dd][Oo]
 //{digit}+    { return (int)Symbol.NULL_SYMBOL; }
 {digit}+    {
                 symbol = SymbolTable.ClassifySymbol(yytext);
-                if(symbol == Symbol.NULL_SYMBOL)
-                {
-                    symbol = SymbolTable.AddUserSymbol(yytext);
-                }
                 yylval.symbol = symbol;
                 return (int)Symbol.INTEGER_LITERAL_SYMBOL;
             }
 
 {alpha}+    {
-                symbol = SymbolTable.ClassifySymbol(yytext);
-                if(symbol == Symbol.NULL_SYMBOL)
-                {
-                    symbol = SymbolTable.AddUserSymbol(yytext);
-                }
-                yylval.symbol = symbol;
+                yylval.identName = yytext;
                 return (int)Symbol.IDENTIFIER_SYMBOL;
             }
 

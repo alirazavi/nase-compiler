@@ -112,6 +112,7 @@
     <Compile Include="Nase\Syntax\SyntaxTreeErrorNode.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Nase\Syntax\SyntaxTreeForStatementNode.cs" />
     <Compile Include="Nase\Syntax\SyntaxTreeIdentNode.cs">
       <SubType>Code</SubType>
     </Compile>

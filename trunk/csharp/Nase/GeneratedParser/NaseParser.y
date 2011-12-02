@@ -7,8 +7,9 @@
 %using Nase.Syntax;
 
 %union { public Symbol symbol;
+         public string identName;
          public SyntaxTreeNode node;
-         public List<Symbol> symbolList; }
+         public List<string> identList; }
 
 %tokentype Symbol
 %token NULL_SYMBOL
@@ -19,7 +20,7 @@
 %token BOOL_TYPE_SYMBOL
 %token READ_SYMBOL WRITE_SYMBOL
 %token IF_SYMBOL THEN_SYMBOL ELSE_SYMBOL
-%token WHILE_SYMBOL DO_SYMBOL
+%token WHILE_SYMBOL DO_SYMBOL FOR_SYMBOL
 %token ASSIGN_SYMBOL
 %token OPEN_PARENTHESIS_SYMBOL CLOSE_PARENTHESIS_SYMBOL
 %token INLINE_IF_SYMBOL INLINE_THEN_SYMBOL INLINE_ELSE_SYMBOL INLINE_FI_SYMBOL
@@ -29,7 +30,7 @@
 %token AND_SYMBOL OR_SYMBOL NOT_SYMBOL
 %token TRUE_SYMBOL FALSE_SYMBOL
 
-%token <symbol> IDENTIFIER_SYMBOL
+%token <identName> IDENTIFIER_SYMBOL
 %token <symbol> INTEGER_LITERAL_SYMBOL
 
 %type <node> program
@@ -39,7 +40,7 @@
 %type <node> statementSequence
 %type <node> statement
 %type <node> declaration
-%type <symbolList> declarationRec
+%type <identList> declarationRec
 %type <node> assignment
 %type <node> read
 %type <node> write
@@ -56,6 +57,7 @@
 %type <node> inlineIfStatement
 %type <node> ifStatement
 %type <node> whileStatement
+%type <node> forStatement
 
 %type <node> identifier
 %type <node> integer
@@ -100,9 +102,23 @@ blockSequence :
     ;
 
 block :
-        BEGIN_SYMBOL statementSequence END_SYMBOL DELIMITER_SYMBOL
+        blockBegin statementSequence blockEnd DELIMITER_SYMBOL
             {
                 $$ = $2;
+            }
+    ;
+
+blockBegin :
+        BEGIN_SYMBOL
+            {
+                this._symbolTable.AddNestingLevel();
+            }
+    ;
+
+blockEnd :
+        END_SYMBOL
+            {
+                this._symbolTable.RemoveNestingLevel();
             }
     ;
 
@@ -146,6 +162,10 @@ statement :
             {
                 $$ = $1;
             }
+    |    forStatement
+            {
+                $$ = $1;
+            }
     ;
 
 declaration :
@@ -154,13 +174,15 @@ declaration :
                 SyntaxTreeDeclarationNode declNode = null;
                 SyntaxTreeSequenceNode seqNode = null;
 
-                var firstDeclNode = new SyntaxTreeDeclarationNode(@$, $1, $2);
-                this._symbolTable.SetDeclarationNodeLinkToSymbol($2, firstDeclNode);
+                Symbol symbol = this._symbolTable.AddUserSymbol($2);
+                var firstDeclNode = new SyntaxTreeDeclarationNode(@$, $1, symbol);
+                this._symbolTable.SetDeclarationNodeLinkToSymbol(symbol, firstDeclNode);
 
-                foreach(Symbol s in $3)
+                foreach(string s in $3)
                 {
-                    declNode = new SyntaxTreeDeclarationNode(@$, $1, s);
-                    this._symbolTable.SetDeclarationNodeLinkToSymbol(s, declNode);
+                    symbol = this._symbolTable.AddUserSymbol(s);
+                    declNode = new SyntaxTreeDeclarationNode(@$, $1, symbol);
+                    this._symbolTable.SetDeclarationNodeLinkToSymbol(symbol, declNode);
                     seqNode = new SyntaxTreeSequenceNode(@$, declNode, seqNode);
                 }
 
@@ -168,8 +190,9 @@ declaration :
             }
     |    typeName IDENTIFIER_SYMBOL
             {
-                $$ = new SyntaxTreeDeclarationNode(@$, $1, $2);
-                this._symbolTable.SetDeclarationNodeLinkToSymbol($2, $$);
+                Symbol symbol = this._symbolTable.AddUserSymbol($2);
+                $$ = new SyntaxTreeDeclarationNode(@$, $1, symbol);
+                this._symbolTable.SetDeclarationNodeLinkToSymbol(symbol, $$);
             }
     ;
 
@@ -181,7 +204,7 @@ declarationRec :
             }
     |    COMMA_SYMBOL IDENTIFIER_SYMBOL
             {
-                $$ = new List<Symbol>();
+                $$ = new List<string>();
                 $$.Add($2);
             }
     ;
@@ -365,7 +388,8 @@ comparisonExpr :
 identifier :
         IDENTIFIER_SYMBOL
             {
-                $$ = new SyntaxTreeIdentNode(@$, $1);
+                Symbol symbol = this._symbolTable.ClassifySymbol($1);
+                $$ = new SyntaxTreeIdentNode(@$, symbol);
             }
     ;
 
@@ -410,5 +434,12 @@ whileStatement :
         WHILE_SYMBOL boolExpr DO_SYMBOL statement
             {
                 $$ = new SyntaxTreeWhileStatementNode(@$, $2, $4);
+            }
+    ;
+
+forStatement :
+        FOR_SYMBOL assignment COMMA_SYMBOL boolExpr COMMA_SYMBOL assignment DO_SYMBOL statement
+            {
+                $$ = new SyntaxTreeForStatementNode(@$, $2, $4, $6, $8);
             }
     ;

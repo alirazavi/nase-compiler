@@ -53,8 +53,9 @@ namespace Nase
 
     public class SymbolTable
     {
-        struct SymbolTableEntry
+        class SymbolTableEntry
         {
+            public Symbol symbol;
             public string sRepresentation;
             public bool bIsBreakingCharSeq;
             public int iYielding;
@@ -65,18 +66,22 @@ namespace Nase
 
         static readonly Logger Logger = LogManager.CreateLogger();
 
-        SymbolTableEntry[] _symbolTable;
-        int _usedEntries;
+        Stack<List<SymbolTableEntry>> _symbolTableStack;
+        List<SymbolTableEntry> _processedSymbols;
+        int _nextSymbol;
 
         public SymbolTable()
         {
-            this._symbolTable = new SymbolTableEntry[200];
-            this._usedEntries = 0;
+            this._nextSymbol = 0;
+
+            this._processedSymbols = new List<SymbolTableEntry>();
+            this._symbolTableStack = new Stack<List<SymbolTableEntry>>();
+            this._symbolTableStack.Push(new List<SymbolTableEntry>(200));
 
             AddFixSymbol("", false);
+            this._nextSymbol++;
             AddFixSymbol(InputFile.EOF_CHAR.ToString(), true);
-            this._usedEntries += 2;
-
+            this._nextSymbol++;
             AddFixSymbol("BEGIN", false);
             AddFixSymbol("END", false);
             AddFixSymbol(";", true);
@@ -89,6 +94,7 @@ namespace Nase
             AddFixSymbol("THEN", false);
             AddFixSymbol("ELSE", false);
             AddFixSymbol("WHILE", false);
+            AddFixSymbol("FOR", false);
             AddFixSymbol("DO", false);
             AddFixSymbol(":=", true);
             AddFixSymbol("(", true);
@@ -112,21 +118,22 @@ namespace Nase
             AddFixSymbol("OR", false);
             AddFixSymbol("NOT", false);
 
+            var baseSymbolTable = this._symbolTableStack.Peek();
             AddFixSymbol("TRUE", false);
-            this._symbolTable[this._usedEntries - 1].type = SymbolType.BooleanSymbolType;
-            this._symbolTable[this._usedEntries - 1].iYielding = -1;
+            baseSymbolTable.Last().type = SymbolType.BooleanSymbolType;
+            baseSymbolTable.Last().iYielding = -1;
 
             AddFixSymbol("FALSE", false);
-            this._symbolTable[this._usedEntries - 1].type = SymbolType.BooleanSymbolType;
-            this._symbolTable[this._usedEntries - 1].iYielding = 0;
+            baseSymbolTable.Last().type = SymbolType.BooleanSymbolType;
+            baseSymbolTable.Last().iYielding = 0;
 
-            this._usedEntries = 100;
+            this._nextSymbol += 2;
         }
 
         public string GetSpecialCharList()
         {
             var list =
-                from entry in this._symbolTable
+                from entry in this._symbolTableStack.Last()
                 where entry.bIsFixEntry && entry.bIsBreakingCharSeq
                 select entry.sRepresentation;
 
@@ -142,19 +149,31 @@ namespace Nase
 
         public Symbol ClassifySymbol(string token)
         {
-            for (int i = 0; i < this._usedEntries; i++)
+            foreach (var table in this._symbolTableStack)
             {
-                if (token == this._symbolTable[i].sRepresentation)
+                foreach (var entry in table)
                 {
-                    return (Symbol)i;
+                    if (token == entry.sRepresentation)
+                    {
+                        return entry.symbol;
+                    }
                 }
             }
-            return Symbol.NULL_SYMBOL;
+            return AddUserSymbol(token);
         }
 
         public Symbol AddUserSymbol(string token)
         {
+            foreach (var e in this._symbolTableStack.Peek())
+            {
+                if (token == e.sRepresentation)
+                {
+                    return e.symbol;
+                }
+            }
+
             SymbolTableEntry entry = new SymbolTableEntry();
+            entry.symbol = (Symbol)this._nextSymbol++;
             entry.bIsFixEntry = false;
             entry.bIsBreakingCharSeq = false;
             entry.nodeLink = null;
@@ -174,81 +193,81 @@ namespace Nase
             return AddSymbol(entry);
         }
 
+        public void AddNestingLevel()
+        {
+            this._symbolTableStack.Push(new List<SymbolTableEntry>());
+        }
+
+        public void RemoveNestingLevel()
+        {
+            this._processedSymbols.AddRange(this._symbolTableStack.Pop());
+        }
+
         public int GetValueOfNumericSymbol(Symbol symbol)
         {
-            if ((int)symbol >= this._usedEntries)
-            {
-                Logger.Fatal("Invalid symbol table index");
-                throw new IndexOutOfRangeException();
-            }
             if (!IsNumberSymbol(symbol) && !IsBooleanSymbol(symbol))
             {
                 Logger.Warn("Trying to get a numeric value from not a numeric or boolean symbol");
             }
-            return this._symbolTable[(int)symbol].iYielding;
+            foreach (var entry in this._processedSymbols.Union(this._symbolTableStack.Peek()))
+                if (entry.symbol == symbol)
+                    return entry.iYielding;
+            throw new Exception("Symbol not found!");
         }
 
         public bool IsIdentifierSymbol(Symbol symbol)
         {
-            if ((int)symbol >= this._usedEntries)
-            {
-                Logger.Fatal("Invalid symbol table index");
-                throw new IndexOutOfRangeException();
-            }
-            return this._symbolTable[(int)symbol].type == SymbolType.IdentifierSymbolType;
+            foreach (var entry in this._processedSymbols.Union(this._symbolTableStack.Peek()))
+                if (entry.symbol == symbol)
+                    return entry.type == SymbolType.IdentifierSymbolType;
+            throw new Exception("Symbol not found!");
         }
 
         public bool IsNumberSymbol(Symbol symbol)
         {
-            if ((int)symbol >= this._usedEntries)
-            {
-                Logger.Fatal("Invalid symbol table index");
-                throw new IndexOutOfRangeException();
-            }
-            return this._symbolTable[(int)symbol].type == SymbolType.NumberSymbolType;
+            foreach (var entry in this._processedSymbols.Union(this._symbolTableStack.Peek()))
+                if (entry.symbol == symbol)
+                    return entry.type == SymbolType.NumberSymbolType;
+            throw new Exception("Symbol not found!");
         }
 
         public bool IsBooleanSymbol(Symbol symbol)
         {
-            if ((int)symbol >= this._usedEntries)
-            {
-                Logger.Fatal("Invalid symbol table index");
-                throw new IndexOutOfRangeException();
-            }
-            return this._symbolTable[(int)symbol].type == SymbolType.BooleanSymbolType;
+            foreach (var entry in this._processedSymbols.Union(this._symbolTableStack.Peek()))
+                if (entry.symbol == symbol)
+                    return entry.type == SymbolType.BooleanSymbolType;
+            throw new Exception("Symbol not found!");
         }
 
         public string GetRepresentationOfSymbol(Symbol symbol)
         {
-            if ((int)symbol >= this._usedEntries)
-            {
-                Logger.Fatal("Invalid symbol table index");
-                throw new IndexOutOfRangeException();
-            }
-            return this._symbolTable[(int)symbol].sRepresentation;
+            foreach (var entry in this._processedSymbols.Union(this._symbolTableStack.Peek()))
+                if (entry.symbol == symbol)
+                    return entry.sRepresentation;
+            throw new Exception("Symbol not found!");
         }
 
         public SyntaxTreeNode GetDeclarationNodeLinkToSymbol(Symbol symbol)
         {
-            if ((int)symbol >= this._usedEntries)
-            {
-                Logger.Fatal("Invalid symbol table index");
-                throw new IndexOutOfRangeException();
-            }
-            return this._symbolTable[(int)symbol].nodeLink;
+            foreach (var entry in this._processedSymbols.Union(this._symbolTableStack.Peek()))
+                if (entry.symbol == symbol)
+                    return entry.nodeLink;
+            throw new Exception("Symbol not found: " + symbol);
         }
 
         public void SetDeclarationNodeLinkToSymbol(Symbol symbol, SyntaxTreeNode node)
         {
-            if ((int)symbol >= this._usedEntries)
-            {
-                Logger.Fatal("Invalid symbol table index");
-                throw new IndexOutOfRangeException();
-            }
-            if (this._symbolTable[(int)symbol].nodeLink == null)
-            {
-                this._symbolTable[(int)symbol].nodeLink = node;
-            }
+            foreach (var table in this._symbolTableStack)
+                foreach (var entry in table)
+                    if (entry.symbol == symbol)
+                    {
+                        if (entry.nodeLink == null)
+                        {
+                            entry.nodeLink = node;
+                        }
+                        return;
+                    }
+            throw new Exception("Symbol not found: " + symbol);
         }
 
         public string DumpSymbolTable()
@@ -258,47 +277,62 @@ namespace Nase
             buffer.AppendLine("SybolTable Dump");
             buffer.AppendLine("---------------");
 
-            for (int i = 0; i < this._usedEntries; i++)
+            foreach(var table in this._symbolTableStack)
             {
-                buffer.AppendFormat("{0,-4}", i);
-                buffer.AppendFormat("{0,-8}", (this._symbolTable[i].bIsFixEntry ? "Fixed" : "User"));
-                buffer.AppendFormat("{0,-12}", (this._symbolTable[i].bIsBreakingCharSeq ? "IsBreakSeq" : ""));
-
-                switch(this._symbolTable[i].type) {
-                    case SymbolType.ReservedWordSymbolType:
-                        buffer.AppendFormat("{0,-12}", "ResWord");
-                        break;
-                    case SymbolType.IdentifierSymbolType:
-                        buffer.AppendFormat("{0,-12}", "Identifier");
-                        break;
-                    case SymbolType.NumberSymbolType:
-                        buffer.AppendFormat("{0,-12}", "Number");
-                        break;
-                    case SymbolType.BooleanSymbolType:
-                        buffer.AppendFormat("{0,-12}", "Boolean");
-                        break;
-                }
-
-                buffer.Append("NodeLink: ");
-                if (this._symbolTable[i].nodeLink != null)
+                foreach (var entry in table)
                 {
-                    buffer.AppendFormat("{0, -25}", this._symbolTable[i].nodeLink.GetType().Name);
+                    DumpSymbolEntry(buffer, entry);
                 }
-                else
-                {
-                    buffer.AppendFormat("{0, -25}", "null");
-                }
-                buffer.AppendFormat(" -- {0}", this._symbolTable[i].sRepresentation);
-                buffer.AppendLine();
+            }
+
+            foreach (var entry in this._processedSymbols.OrderBy(a => (int)a.symbol))
+            {
+                DumpSymbolEntry(buffer, entry);
             }
 
             return buffer.ToString();
+        }
+
+        void DumpSymbolEntry(StringBuilder buffer, SymbolTableEntry entry)
+        {
+            buffer.AppendFormat("{0,-30}", entry.symbol);
+            buffer.AppendFormat("{0,-8}", (entry.bIsFixEntry ? "Fixed" : "User"));
+            buffer.AppendFormat("{0,-12}", (entry.bIsBreakingCharSeq ? "IsBreakSeq" : ""));
+
+            switch (entry.type)
+            {
+                case SymbolType.ReservedWordSymbolType:
+                    buffer.AppendFormat("{0,-12}", "ResWord");
+                    break;
+                case SymbolType.IdentifierSymbolType:
+                    buffer.AppendFormat("{0,-12}", "Identifier");
+                    break;
+                case SymbolType.NumberSymbolType:
+                    buffer.AppendFormat("{0,-12}", "Number");
+                    break;
+                case SymbolType.BooleanSymbolType:
+                    buffer.AppendFormat("{0,-12}", "Boolean");
+                    break;
+            }
+
+            buffer.Append("NodeLink: ");
+            if (entry.nodeLink != null)
+            {
+                buffer.AppendFormat("{0, -25}", entry.nodeLink.GetType().Name);
+            }
+            else
+            {
+                buffer.AppendFormat("{0, -25}", "null");
+            }
+            buffer.AppendFormat(" -- {0}", entry.sRepresentation);
+            buffer.AppendLine();
         }
 
         void AddFixSymbol(string representation, bool isBreakingCharSeq)
         {
             AddSymbol(new SymbolTableEntry()
             {
+                symbol = (Symbol)this._nextSymbol,
                 sRepresentation = representation,
                 bIsBreakingCharSeq = isBreakingCharSeq,
                 iYielding = 0,
@@ -306,18 +340,16 @@ namespace Nase
                 type = SymbolType.ReservedWordSymbolType,
                 nodeLink = null,
             });
+
+            this._nextSymbol++;
         }
 
         Symbol AddSymbol(SymbolTableEntry entry)
         {
-            if (this._usedEntries >= this._symbolTable.Length)
-            {
-                SymbolTableEntry[] newTable = new SymbolTableEntry[this._symbolTable.Length * 2];
-                Array.Copy(this._symbolTable, newTable, this._symbolTable.Length);
-                this._symbolTable = newTable;
-            }
-            this._symbolTable[this._usedEntries] = entry;
-            return (Symbol)this._usedEntries++;
+            var currentSymbolTable = this._symbolTableStack.Peek();
+
+            currentSymbolTable.Add(entry);
+            return entry.symbol;
         }
     }
 }
