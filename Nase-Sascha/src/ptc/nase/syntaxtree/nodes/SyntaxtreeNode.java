@@ -2,6 +2,7 @@ package ptc.nase.syntaxtree.nodes;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import ptc.nase.backend.*;
 
 
 @SuppressWarnings("unused")
@@ -85,6 +86,14 @@ public class SyntaxtreeNode
 		}		
 	}
 	
+	protected void setUserEntry(int index, long entry)
+	{
+		if (userEntries != null && index < userEntries.size() )
+		{
+			userEntries.set(index, entry);
+		}		
+	}
+	
 	protected void addChild(SyntaxtreeNode newChild)
 	{
 		if (childs == null)
@@ -131,6 +140,12 @@ public class SyntaxtreeNode
 		}
 		
 		return ret;
+	}
+	
+	public void generateCode() throws IOException
+	{
+		String code = Macro.comment("POSITION: " + line + "/" + column + ": begin coding of " + type.toString() + " node (" + id + ")");
+		CodeFile.writeCode(code);
 	}
 	
 }

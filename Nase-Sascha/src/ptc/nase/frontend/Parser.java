@@ -24,7 +24,7 @@ public class Parser
 	{
 		scanner = sScanner;
 		nullNode = new SyntaxtreeNode();
-		symbolTable = scanner.getSymbolTable();
+		symbolTable = SymbolTable.getInstance();
 		syntaxtree = null;
 	}
 	
@@ -1085,7 +1085,7 @@ public class Parser
 		}
 	}
 	
-	public boolean parseProgram() throws IOException
+	public Syntaxtree parseProgram() throws Exception
 	{
 		SyntaxtreeNode rootNode;
 		
@@ -1109,13 +1109,17 @@ public class Parser
 				treeView.setSize(1024, 768);
 				treeView.setVisible(true);
 			}
+			
+			return syntaxtree;
 		}
-		else
-		{
-			return false;
-		}
+
+		throw new Exception("Parsing failed...");
 		
-		return true;
+	}
+	
+	public Syntaxtree getSyntaxtree()
+	{
+		return syntaxtree;
 	}
 	
 	private void generalSyntaxError(long line, long column, String message) throws IOException

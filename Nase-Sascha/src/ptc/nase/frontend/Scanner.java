@@ -33,7 +33,7 @@ public class Scanner implements IScanner
 	public Scanner(String filename) throws FileNotFoundException
 	{
 		infile = new Infile(filename);
-		symbolTable = new SymbolTable();
+		symbolTable = SymbolTable.getInstance();
 		
 		Listing.init(filename);
 		

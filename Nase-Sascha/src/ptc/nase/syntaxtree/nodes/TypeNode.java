@@ -2,6 +2,8 @@ package ptc.nase.syntaxtree.nodes;
 
 import java.io.IOException;
 
+import ptc.nase.backend.Storage;
+
 public class TypeNode extends SyntaxtreeNode
 {
 	public TypeNode(long sLine, long sColumn, int symbol)
