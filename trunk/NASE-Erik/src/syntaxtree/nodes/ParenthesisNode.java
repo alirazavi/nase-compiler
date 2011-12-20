@@ -1,6 +1,5 @@
-package compiler;
+package syntaxtree.nodes;
 
-import syntaxtree.nodes.Node;
 
 public class ParenthesisNode extends Node {
 	

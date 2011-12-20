@@ -5,7 +5,10 @@
 package compiler;
 
 import java.io.File;
+import java.util.Arrays;
 
+import compiler.parsers.ParserFactory;
+import compiler.parsers.ParserWrapper;
 import compiler.scanner.ScannerFactory;
 import compiler.scanner.ScannerWrapper;
 
@@ -21,9 +24,9 @@ public class NaseCompiler {
 			".mml", ".mmo" };
 	public final static String TOKEN_LIST_SEPERATOR = " ";
 	
-	//private static Syntaxtree syntree;
 	
 	private static ScannerWrapper scanner;
+	private static ParserWrapper parser;
 
 	private static void unlinkOldFiles(String filename) {
 		System.out.println("[INFO]\tDeleting old files");
@@ -38,8 +41,7 @@ public class NaseCompiler {
 	}
 
 	private static boolean phase1(String filename){
-		Parser p = new Parser(scanner);
-		p.parseProgramm();
+		parser.parseProgramm();
 		return true;
 	}
 	
@@ -78,14 +80,9 @@ public class NaseCompiler {
 		FileManager.getInstance().init(args[0]);
 		
 		/* analyze options  -jflex for jflex generated scanner*/
-		for(String s : args){
-			if(s.equals("-jflex"))
-				scanner = ScannerFactory.getScanner("jflex", args[0]);
-		}	
-		
-		if(scanner == null)
-			scanner = ScannerFactory.getScanner();
-		
+		scanner = ScannerFactory.getScanner(args);
+		parser = ParserFactory.getParser(args, scanner);
+				
 			//syntree = new Syntaxtree();
 		if(phase1(args[0])){
 			if(phase2()){

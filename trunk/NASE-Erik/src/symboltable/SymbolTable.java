@@ -57,8 +57,12 @@ public class SymbolTable {
 		symTable.put(Symbols.READ_SYMBOL , new Symbol("READ", false, 0, true, SymbolType.RESERVED_WORD, null, Symbols.READ_SYMBOL ));
 		symTable.put(Symbols.WRITE_SYMBOL , new Symbol("WRITE", false, 0, true, SymbolType.RESERVED_WORD, null, Symbols.WRITE_SYMBOL ));
 		symTable.put(Symbols.BOOL_TYPE_SYMBOL , new Symbol("BOOL", false, 0, true, SymbolType.RESERVED_WORD, null, Symbols.BOOL_TYPE_SYMBOL ));
-		symTable.put(Symbols.TRUE_SYMBOL , new Symbol("TRUE", false, 0, true, SymbolType.RESERVED_WORD, null, Symbols.TRUE_SYMBOL ));
-		symTable.put(Symbols.FALSE_SYMBOL , new Symbol("FALSE", false, 0, true, SymbolType.RESERVED_WORD, null, Symbols.FALSE_SYMBOL ));
+		symTable.put(Symbols.TRUE_SYMBOL , new Symbol("TRUE", false, 1, true, SymbolType.BOOL, null, Symbols.TRUE_SYMBOL ));
+		symTable.put(Symbols.FALSE_SYMBOL , new Symbol("FALSE", false, 0, true, SymbolType.BOOL, null, Symbols.FALSE_SYMBOL ));
+		symTable.put(Symbols.NOT_SYMBOL , new Symbol("NOT", false, 0, true, SymbolType.RESERVED_WORD, null, Symbols.NOT_SYMBOL ));
+		symTable.put(Symbols.IF_SYMBOL , new Symbol("IF", false, 0, true, SymbolType.RESERVED_WORD, null, Symbols.IF_SYMBOL ));
+		symTable.put(Symbols.THEN_SYMBOL , new Symbol("THEN", false, 0, true, SymbolType.RESERVED_WORD, null, Symbols.THEN_SYMBOL ));
+		symTable.put(Symbols.ELSE_SYMBOL , new Symbol("ELSE", false, 0, true, SymbolType.RESERVED_WORD, null, Symbols.ELSE_SYMBOL ));
 		for(int i = symTable.size(); i < 100; i++)
 			symTable.put(i, new Symbol("", false, 0, true, SymbolType.RESERVED_WORD, null, i));
 	}
@@ -96,8 +100,6 @@ public class SymbolTable {
 	
 	public String toString(){
 		StringBuffer buffer = new StringBuffer();
-		buffer.append('\n');
-		buffer.append("Symboltabledump\n");
 		Iterator<Symbol> it = symTable.values().iterator();
 		while(it.hasNext()){
 			buffer.append(String.format("%s\n", it.next()));

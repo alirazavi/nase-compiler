@@ -2,7 +2,9 @@ package syntaxtree.nodes;
 
 import java.util.ArrayList;
 
-import compiler.Parser;
+import compiler.parsers.ParserBLXIF;
+
+
 
 public abstract class Node{
 	
@@ -21,7 +23,7 @@ public abstract class Node{
 	protected int id  = 0;
 		
 	public Node(){
-		Parser.addToHistory(this);
+		ParserBLXIF.addToHistory(this);
 	}
 	
 	public void addUserEntry(Object o){
@@ -86,11 +88,10 @@ public abstract class Node{
 
 	public String dumpNode(){
 		StringBuffer buffer = new StringBuffer();
-		buffer.append(String.format("Node start\n\t%s\n\tID:       %d\n\tRow:      %d\n\tColumn:   %d\n\tEntries:   %d\n\tLinks:     %d", this.getClass().getSimpleName(), id, line, column, userEntries.size()+children.size(), children.size()));
-		buffer.append("\n");
-		
+		buffer.append(String.format("Node start\n\t%s\n\tID:       %d\n\tRow:      %d\n\tColumn:   %d\n\tEntries:   %d\n\tLinks:     %d\n", this.getClass().getSimpleName(), id, line, column, userEntries.size()+children.size(), children.size()));
+
 		for(Object o : userEntries)
-			buffer.append("\tUserentry: "+o);
+			buffer.append("\tUserentry: "+o+"\n");
 		
 		for(Node n : children)
 			buffer.append("\tChild-ID: "+n.getId()+"\n");
@@ -98,6 +99,19 @@ public abstract class Node{
 		if(children.size() == 0)
 			buffer.append("\n");
 		
+		return buffer.toString();
+	}
+	
+	public String dump(int lvl){
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(this.getClass().getSimpleName()+"\n");
+		
+		for(Node n : children){
+			for(int i = 0; i < (lvl*4); i++)
+				buffer.append('.');
+			
+			buffer.append("...."+n.dump(lvl+1));
+		}
 		return buffer.toString();
 	}
 	

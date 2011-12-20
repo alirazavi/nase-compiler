@@ -45,6 +45,29 @@ public class Scanner extends ScannerWrapper{
 		return symbolnr;
 	}
 	
+	public void skipBlockEndSymbol(){
+		String token;
+		int symbol = getCurrentSymbol();
+		
+		if(symbol == Symbols.NULL_SYMBOL  ||
+			 symbol == Symbols.EOF   ||
+			 symbol == Symbols.DELIMITER_SYMBOL )
+			return;
+				
+		while((token = getNextToken()).length() > 0){
+			symbol = SymbolTable.getInstance().classifySymbol(token);
+			if(symbol == Symbols.NULL_SYMBOL ){
+				scannerDebugOutTokenSymbol(token, symbol);
+				continue;
+			} else if(symbol == Symbols.EOF || symbol == Symbols.END_SYMBOL){
+				scannerDebugOutTokenSymbol(token, symbol);
+				return;
+			}
+			scannerDebugOutText("Skipping...");
+			scannerDebugOutTokenSymbol(token, symbol);
+		}
+	}
+	
 	public void skipToDelimiter(){
 		String token;
 		int symbol = getCurrentSymbol();
@@ -86,6 +109,26 @@ public class Scanner extends ScannerWrapper{
 		}
 	}
 	
+	public int lookAheadOneSymbol() {
+
+		int symbolNr;
+		String token;
+
+		token = getNextToken();
+
+		if( 0 == token.length() ) {
+			scannerDebugOutTokenSymbol(token, Symbols.NULL_SYMBOL );
+			return Symbols.NULL_SYMBOL;
+		} else {
+			symbolNr = SymbolTable.getInstance().classifySymbol(token);
+			if( symbolNr <= Symbols.NULL_SYMBOL ) {
+				symbolNr = SymbolTable.getInstance().insertUserSymbol(token);
+			}
+			scannerDebugOutTokenSymbol(token, symbolNr);
+			return symbolNr;
+		}
+	}
+
 	
 	private String getNextToken() {
 		int i = 0;
