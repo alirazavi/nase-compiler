@@ -3,11 +3,15 @@ package ptc.nase;
 import java.io.*;
 import java.util.ArrayList;
 
+import ptc.nase.backend.Storage;
+import ptc.nase.backend.CodeFile;
 import ptc.nase.frontend.IScanner;
 import ptc.nase.frontend.Infile;
 import ptc.nase.frontend.JFlexNaseScanner;
+import ptc.nase.frontend.Listing;
 import ptc.nase.frontend.Parser;
 import ptc.nase.frontend.Scanner;
+import ptc.nase.syntaxtree.Syntaxtree;
 import ptc.nase.syntaxtree.nodes.NODE_TYPE;
 import ptc.nase.syntaxtree.nodes.SyntaxtreeNode;
 
@@ -17,6 +21,7 @@ public class Nase
 
 	public static String IN_FILE_EXTENSION = ".nase";
 	public static String LIST_FILE_EXTENSION = ".lst2";
+	public static String MMIX_FILE_EXTENSION = ".mms";
 	
 	public static char IF_EOF_CHAR = 0x03;
 	public static String ECHO_FILE_EXTENSION = ".lst1";
@@ -29,29 +34,69 @@ public class Nase
 	
 	public static final char ST_BLANK_CHAR = ' ';
 	
-	
-	
 	public static void main(String[] args)
 	{
+		Syntaxtree syntaxtree;
+		
 		try 
 		{
-			IScanner scanner;
-			//scanner = new Scanner("parsetest");
-
-			scanner = new JFlexNaseScanner("parsetest");
 			
-			Parser parser = new Parser(scanner);			
+			syntaxtree = phase1("parsetest");
+			syntaxtree = phase2(syntaxtree);
+			syntaxtree = phase3(syntaxtree, "parsetest");
 			
-			parser.parseProgram();
 			
 		} 
-		catch (FileNotFoundException e1) {
+		catch (FileNotFoundException e1) 
+		{
 			e1.printStackTrace();
-		} catch (IOException e) {
+		} 
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+		}
+		catch (Exception e) 
+		{
 			e.printStackTrace();
 		}
 		
 	}
+	
+	
+	public static Syntaxtree phase1(String filename) throws Exception
+	{
+		boolean result;
+		IScanner scanner;
+		scanner = new JFlexNaseScanner(filename);
+		Syntaxtree syntaxtree;
+		
+		Parser parser = new Parser(scanner);
+		syntaxtree = parser.parseProgram();
+		
+		return syntaxtree;
+	}
+	
+	public static Syntaxtree phase2(Syntaxtree syntaxtree) throws Exception
+	{	
+		if (syntaxtree.allocateStorageForConstants())
+		{
+			if (syntaxtree.allocateStorageForDeclarations())
+			{
+				return syntaxtree;
+			}
+		}
+		
+		Listing.writeLine("Errors in pass 2 of compilation!");
+		throw new Exception("Errors in pass 2 of compilation!");
+	}
+	
+	public static Syntaxtree phase3(Syntaxtree syntaxtree, String filename) throws FileNotFoundException
+	{
+		CodeFile.init(filename);
+		
+		return syntaxtree;
+	}
+	
 	
 	public static void main_scannertest(String[] args) throws FileNotFoundException
 	{

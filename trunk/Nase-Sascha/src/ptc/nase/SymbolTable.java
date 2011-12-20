@@ -78,7 +78,14 @@ public class SymbolTable
 		return null;
 	}
 	
-	public SymbolTable()
+	private static SymbolTable instance = new SymbolTable();
+	
+	public static SymbolTable getInstance()
+	{
+		return instance;
+	}
+	
+	private SymbolTable()
 	{
 		symbolTable = new SymbolTableEntry[ST_SYMBOLTABLE_SIZE];
 		nullNode = new SyntaxtreeNode();

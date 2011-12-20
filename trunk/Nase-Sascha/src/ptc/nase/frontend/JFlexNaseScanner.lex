@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.File;
 import java.io.PrintStream;
 import ptc.nase.Nase;
+@SuppressWarnings("unused")
 
 %% // -------------------------------------------------------------------------------------
 
@@ -26,7 +27,7 @@ import ptc.nase.Nase;
 %eofval}
 
 %init{
-		symbolTable = new SymbolTable();
+		symbolTable = SymbolTable.getInstance();
 %init}
 
 %{
