@@ -1,5 +1,5 @@
 package symboltable;
 
 public enum SymbolType {
-	RESERVED_WORD, IDENTIFIER, NUMBER
+	RESERVED_WORD, IDENTIFIER, NUMBER, BOOL
 }

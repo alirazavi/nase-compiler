@@ -8,7 +8,5 @@ public class Syntaxtree {
 	public String toString() {
 		return "Syntaxtree []";
 	}
-	
-	
 
 }

@@ -25,7 +25,7 @@ import static symboltable.Symbols.*;
 
 %cupsym symboltable.Symbols
 %cup
-// %cupdebug
+%cupdebug
 %ignorecase
 
 %init{
@@ -78,8 +78,6 @@ import static symboltable.Symbols.*;
 		
 		try {
 			s = next_token();
-			
-			System.out.println(s +"\t"+ s.value);
 			currentSymbol = s.sym;
 			if(s.sym == EOF){
 				done = true;
@@ -107,6 +105,20 @@ import static symboltable.Symbols.*;
 			scannerDebugOutText("Skipping...");
 			scannerDebugOutTokenSymbol(yytext(), currentSymbol);
 		}
+	}
+	
+	public void skipBlockEndSymbol(){
+		while(this.getNextSymbol()){
+			if(currentSymbol == Symbols.EOF || currentSymbol == Symbols.END_SYMBOL)
+				break;
+				
+			scannerDebugOutText("Skipping...");
+			scannerDebugOutTokenSymbol(yytext(), currentSymbol);
+		}
+	}
+	
+	public int lookAheadOneSymbol(){
+		return 0;
 	}
 %}
 

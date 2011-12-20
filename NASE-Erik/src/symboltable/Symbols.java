@@ -35,6 +35,10 @@ public class Symbols {
 	public final static int BOOL_TYPE_SYMBOL = 29;
 	public final static int TRUE_SYMBOL = 30;
 	public final static int FALSE_SYMBOL = 31;
+	public final static int NOT_SYMBOL = 32;
+	public final static int IF_SYMBOL = 33;
+	public final static int THEN_SYMBOL = 34;
+	public final static int ELSE_SYMBOL = 35;
 	
 	
 	public final static int INTEGER_LITERAL = 98;
