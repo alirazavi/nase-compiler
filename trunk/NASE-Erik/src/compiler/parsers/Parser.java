@@ -364,16 +364,15 @@ public class Parser extends ParserWrapper{
 		int line = scanner.getLine();
 		int column = scanner.getColumn();
 		
-		Node expr;
+		Node ident;
 		
 		if(scanner.getCurrentSymbol() == Symbols.WRITE_SYMBOL ){
 			scanner.getNextSymbol();
 			
-			if(!NULLNODE.equals(expr = isIntExpr())
-					|| !NULLNODE.equals(expr = isBoolExpr()))
-				return new WriteNode(line, column, expr);
+			if(!NULLNODE.equals(ident = isIdentifier()))
+				return new WriteNode(line, column, ident);
 			else
-				return getErrorNode("intExpr or bool Expr expected after WRITE");
+				return getErrorNode("Identifier expected after WRITE");
 		}
 		return NULLNODE;
 	}
