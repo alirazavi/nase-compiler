@@ -5,7 +5,6 @@
 package compiler;
 
 import java.io.File;
-import java.util.Arrays;
 
 import compiler.parsers.ParserFactory;
 import compiler.parsers.ParserWrapper;
